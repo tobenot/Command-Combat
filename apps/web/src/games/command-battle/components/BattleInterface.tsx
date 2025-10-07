@@ -31,6 +31,19 @@ export function BattleInterface({ state, onCommandSelect, onGameStart, onRestart
 		}
 	};
 
+	const getCommandEmoji = (commandType: string) => {
+		switch (commandType) {
+			case 'light_attack': return '⚡';
+			case 'heavy_attack': return '💥';
+			case 'throw': return '🤜';
+			case 'block': return '🛡️';
+			case 'advance': return '➡️';
+			case 'retreat': return '⬅️';
+			case 'special': return '✨';
+			default: return '⚔️';
+		}
+	};
+
 	if (state.gameStatus === 'menu') {
 		return (
 			<div className="w-full h-full flex items-center justify-center bg-[#1a1a2e] text-white">
@@ -82,6 +95,37 @@ export function BattleInterface({ state, onCommandSelect, onGameStart, onRestart
 		);
 	}
 
+	const getDistanceVisualization = (distance: string) => {
+		switch (distance) {
+			case 'near':
+				return (
+					<div className="flex items-center justify-center space-x-2">
+						<div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-black font-bold">⚔️</div>
+						<div className="w-16 h-1 bg-red-400"></div>
+						<div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-black font-bold">⚔️</div>
+					</div>
+				);
+			case 'mid':
+				return (
+					<div className="flex items-center justify-center space-x-2">
+						<div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-black font-bold">⚔️</div>
+						<div className="w-24 h-1 bg-yellow-400"></div>
+						<div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-black font-bold">⚔️</div>
+					</div>
+				);
+			case 'far':
+				return (
+					<div className="flex items-center justify-center space-x-2">
+						<div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-black font-bold">⚔️</div>
+						<div className="w-32 h-1 bg-green-400"></div>
+						<div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-black font-bold">⚔️</div>
+					</div>
+				);
+			default:
+				return null;
+		}
+	};
+
 	return (
 		<div className="w-full h-full bg-[#1a1a2e] text-white p-4 flex flex-col">
 			{/* 状态栏 */}
@@ -102,6 +146,19 @@ export function BattleInterface({ state, onCommandSelect, onGameStart, onRestart
 					<span>回合: {state.round}</span>
 					<span>决策剩余时间: {state.timeRemaining}秒</span>
 					<span>当前距离: [{getDistanceText(state.distance)}]</span>
+				</div>
+			</div>
+
+			{/* 距离可视化 */}
+			<div className="bg-[#16213e] p-4 rounded-lg mb-4">
+				<div className="text-center mb-2">
+					<h3 className="font-semibold text-lg">[战场距离]</h3>
+				</div>
+				<div className="flex items-center justify-center">
+					{getDistanceVisualization(state.distance)}
+				</div>
+				<div className="text-center mt-2 text-sm text-gray-300">
+					{state.player.name} ← {getDistanceText(state.distance)} → {state.enemy.name}
 				</div>
 			</div>
 
@@ -137,7 +194,10 @@ export function BattleInterface({ state, onCommandSelect, onGameStart, onRestart
 								}`}
 								title={command.description}
 							>
-								{command.name}
+								<div className="flex items-center justify-center space-x-1">
+									<span className="text-lg">{getCommandEmoji(command.type)}</span>
+									<span>{command.name}</span>
+								</div>
 								{command.meterCost > 0 && (
 									<div className="text-xs text-yellow-300">
 										气: {command.meterCost}
