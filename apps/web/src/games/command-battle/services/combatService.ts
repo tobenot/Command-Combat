@@ -27,8 +27,8 @@ class CombatService {
 			enemy: {
 				id: 'enemy',
 				name: '莽夫',
-				maxHp: 100,
-				currentHp: 100,
+				maxHp: 80,
+				currentHp: 80,
 				maxMeter: 100,
 				currentMeter: 0,
 				commands: enemyCommands,
@@ -622,7 +622,7 @@ class CombatService {
 
 	private switchToNextEnemy(state: BattleState): void {
 		const enemyNames = ['莽夫', '铁壁', '宿敌'];
-		const enemyHp = [100, 120, 150]; // 每个敌人血量递增
+		const enemyHp = [80, 100, 100]; // 每个敌人血量递增，但总体更少
 		
 		state.enemy.name = enemyNames[state.currentEnemyIndex];
 		state.enemy.maxHp = enemyHp[state.currentEnemyIndex];
@@ -631,9 +631,9 @@ class CombatService {
 		state.distance = 'mid';
 		state.round = 1; // 重置回合数
 		
-		// 恢复玩家状态
-		state.player.currentHp = Math.min(state.player.maxHp, state.player.currentHp + 20); // 每场战斗后恢复20HP
-		state.player.currentMeter = Math.min(state.player.maxMeter, state.player.currentMeter + 30); // 恢复30气力
+		// 恢复玩家状态 - 更多恢复
+		state.player.currentHp = Math.min(state.player.maxHp, state.player.currentHp + 50); // 每场战斗后恢复50HP
+		state.player.currentMeter = Math.min(state.player.maxMeter, state.player.currentMeter + 50); // 恢复50气力
 		
 		state.combatLog.push(`⚔️ 第二场：${state.enemy.name} (HP: ${state.enemy.maxHp})`);
 	}
