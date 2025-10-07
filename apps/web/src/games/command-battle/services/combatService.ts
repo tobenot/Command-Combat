@@ -422,18 +422,20 @@ class CombatService {
 		let log = '';
 		const playerEmoji = this.getCommandEmoji(playerCmd.type);
 		const enemyEmoji = this.getCommandEmoji(enemyCmd.type);
+		
+		const commandDisplay = `${playerEmoji} ${playerCmd.name} vs ${enemyEmoji} ${enemyCmd.name}`;
 
 		if (!playerEffective && !enemyEffective) {
-			log = `❌ 双方行动无效`;
+			log = `${commandDisplay} → ❌ 双方行动无效`;
 			return { damageToPlayer, damageToEnemy, log };
 		}
 
 		if (playerEffective && !enemyEffective) {
 			if (playerCat === 'attack' || playerCat === 'throw') {
 				damageToEnemy = playerCmd.damage;
-				log = `${playerEmoji} 命中! ${enemyEmoji} 落空 → -${damageToEnemy}HP`;
+				log = `${commandDisplay} → ${playerEmoji} 命中! ${enemyEmoji} 落空 → -${damageToEnemy}HP`;
 			} else {
-				log = `${playerEmoji} 成功 ${enemyEmoji} 落空`;
+				log = `${commandDisplay} → ${playerEmoji} 成功 ${enemyEmoji} 落空`;
 			}
 			return { damageToPlayer, damageToEnemy, log };
 		}
@@ -441,27 +443,27 @@ class CombatService {
 		if (!playerEffective && enemyEffective) {
 			if (enemyCat === 'attack' || enemyCat === 'throw') {
 				damageToPlayer = enemyCmd.damage;
-				log = `${playerEmoji} 落空 ${enemyEmoji} 命中! → -${damageToPlayer}HP`;
+				log = `${commandDisplay} → ${playerEmoji} 落空 ${enemyEmoji} 命中! → -${damageToPlayer}HP`;
 			} else {
-				log = `${playerEmoji} 落空 ${enemyEmoji} 成功`;
+				log = `${commandDisplay} → ${playerEmoji} 落空 ${enemyEmoji} 成功`;
 			}
 			return { damageToPlayer, damageToEnemy, log };
 		}
 
 		if (playerCat === 'move' && enemyCat === 'move') {
-			log = `🚶 双方调整距离`;
+			log = `${commandDisplay} → 🚶 双方调整距离`;
 			return { damageToPlayer, damageToEnemy, log };
 		}
 
 		if (playerCat === 'move') {
 			if (enemyCat === 'attack') {
 				damageToPlayer = enemyCmd.damage;
-				log = `🚶 移动中被 ${enemyEmoji} 命中! → -${damageToPlayer}HP`;
+				log = `${commandDisplay} → 🚶 移动中被 ${enemyEmoji} 命中! → -${damageToPlayer}HP`;
 			} else if (enemyCat === 'throw') {
 				damageToPlayer = enemyCmd.damage;
-				log = `🚶 移动中被投技! → -${damageToPlayer}HP`;
+				log = `${commandDisplay} → 🚶 移动中被投技! → -${damageToPlayer}HP`;
 			} else {
-				log = `🚶 ${enemyEmoji} 防御姿态`;
+				log = `${commandDisplay} → 🚶 ${enemyEmoji} 防御姿态`;
 			}
 			return { damageToPlayer, damageToEnemy, log };
 		}
@@ -469,12 +471,12 @@ class CombatService {
 		if (enemyCat === 'move') {
 			if (playerCat === 'attack') {
 				damageToEnemy = playerCmd.damage;
-				log = `${playerEmoji} 命中移动中的对手! → -${damageToEnemy}HP`;
+				log = `${commandDisplay} → ${playerEmoji} 命中移动中的对手! → -${damageToEnemy}HP`;
 			} else if (playerCat === 'throw') {
 				damageToEnemy = playerCmd.damage;
-				log = `投技命中移动中的对手! → -${damageToEnemy}HP`;
+				log = `${commandDisplay} → 投技命中移动中的对手! → -${damageToEnemy}HP`;
 			} else {
-				log = `${playerEmoji} 防御姿态 🚶`;
+				log = `${commandDisplay} → ${playerEmoji} 防御姿态 🚶`;
 			}
 			return { damageToPlayer, damageToEnemy, log };
 		}
@@ -483,24 +485,24 @@ class CombatService {
 			const rpsResult = this.rps(playerCat, enemyCat);
 			if (rpsResult === 'left') {
 				if (enemyCat === 'throw') {
-					log = `${playerEmoji} 躲避投技成功!`;
+					log = `${commandDisplay} → ${playerEmoji} 躲避投技成功!`;
 				} else if (enemyCat === 'attack') {
 					damageToPlayer = Math.floor(enemyCmd.damage * 0.5);
-					log = `${playerEmoji} 闪避姿态，${enemyEmoji} 擦伤 → -${damageToPlayer}HP`;
+					log = `${commandDisplay} → ${playerEmoji} 闪避姿态，${enemyEmoji} 擦伤 → -${damageToPlayer}HP`;
 				} else {
-					log = `${playerEmoji} ${enemyEmoji}`;
+					log = `${commandDisplay} → ${playerEmoji} ${enemyEmoji}`;
 				}
 			} else if (rpsResult === 'right') {
 				if (playerCat === 'throw') {
-					log = `${playerEmoji} 投技被躲避!`;
+					log = `${commandDisplay} → ${playerEmoji} 投技被躲避!`;
 				} else if (playerCat === 'attack') {
 					damageToEnemy = Math.floor(playerCmd.damage * 0.5);
-					log = `${enemyEmoji} 闪避姿态，${playerEmoji} 擦伤 → -${damageToEnemy}HP`;
+					log = `${commandDisplay} → ${enemyEmoji} 闪避姿态，${playerEmoji} 擦伤 → -${damageToEnemy}HP`;
 				} else {
-					log = `${playerEmoji} ${enemyEmoji}`;
+					log = `${commandDisplay} → ${playerEmoji} ${enemyEmoji}`;
 				}
 			} else {
-				log = `${playerEmoji} 对峙 ${enemyEmoji}`;
+				log = `${commandDisplay} → ${playerEmoji} 对峙 ${enemyEmoji}`;
 			}
 			return { damageToPlayer, damageToEnemy, log };
 		}
@@ -510,55 +512,55 @@ class CombatService {
 			if (enemyCat === 'block' && playerCat === 'attack') {
 				const dmg = Math.floor(playerCmd.damage * blockReduction);
 				damageToEnemy = dmg;
-				log = `${playerEmoji} 被格挡 → -${dmg}HP`;
+				log = `${commandDisplay} → ${playerEmoji} 被格挡 → -${dmg}HP`;
 			} else if (playerCat === 'throw' && enemyCat === 'block') {
 				damageToEnemy = Math.floor(playerCmd.damage * advantageMultiplier);
-				log = `${playerEmoji} 破防! → -${damageToEnemy}HP`;
+				log = `${commandDisplay} → ${playerEmoji} 破防! → -${damageToEnemy}HP`;
 			} else if (playerCat === 'attack' && enemyCat === 'throw') {
 				damageToEnemy = Math.floor(playerCmd.damage * advantageMultiplier);
-				log = `${playerEmoji} 打断投技! → -${damageToEnemy}HP`;
+				log = `${commandDisplay} → ${playerEmoji} 打断投技! → -${damageToEnemy}HP`;
 			} else {
 				damageToEnemy = Math.floor(playerCmd.damage * advantageMultiplier);
-				log = `${playerEmoji} 克制 ${enemyEmoji} → -${damageToEnemy}HP`;
+				log = `${commandDisplay} → ${playerEmoji} 克制 ${enemyEmoji} → -${damageToEnemy}HP`;
 			}
 			return { damageToPlayer, damageToEnemy, log };
 		} else if (rpsResult === 'right') {
 			if (playerCat === 'block' && enemyCat === 'attack') {
 				const dmg = Math.floor(enemyCmd.damage * blockReduction);
 				damageToPlayer = dmg;
-				log = `${enemyEmoji} 被格挡 → -${dmg}HP`;
+				log = `${commandDisplay} → ${enemyEmoji} 被格挡 → -${dmg}HP`;
 			} else if (enemyCat === 'throw' && playerCat === 'block') {
 				damageToPlayer = Math.floor(enemyCmd.damage * advantageMultiplier);
-				log = `${enemyEmoji} 破防! → -${damageToPlayer}HP`;
+				log = `${commandDisplay} → ${enemyEmoji} 破防! → -${damageToPlayer}HP`;
 			} else if (enemyCat === 'attack' && playerCat === 'throw') {
 				damageToPlayer = Math.floor(enemyCmd.damage * advantageMultiplier);
-				log = `${enemyEmoji} 打断投技! → -${damageToPlayer}HP`;
+				log = `${commandDisplay} → ${enemyEmoji} 打断投技! → -${damageToPlayer}HP`;
 			} else {
 				damageToPlayer = Math.floor(enemyCmd.damage * advantageMultiplier);
-				log = `${playerEmoji} 被克 ${enemyEmoji} → -${damageToPlayer}HP`;
+				log = `${commandDisplay} → ${playerEmoji} 被克 ${enemyEmoji} → -${damageToPlayer}HP`;
 			}
 			return { damageToPlayer, damageToEnemy, log };
 		} else {
 			if (playerCat === 'attack' && enemyCat === 'attack') {
 				if (playerCmd.priority > enemyCmd.priority) {
 					damageToEnemy = playerCmd.damage;
-					log = `${playerEmoji} 先手! → -${damageToEnemy}HP`;
+					log = `${commandDisplay} → ${playerEmoji} 先手! → -${damageToEnemy}HP`;
 				} else if (enemyCmd.priority > playerCmd.priority) {
 					damageToPlayer = enemyCmd.damage;
-					log = `${enemyEmoji} 先手! → -${damageToPlayer}HP`;
+					log = `${commandDisplay} → ${enemyEmoji} 先手! → -${damageToPlayer}HP`;
 				} else {
 					damageToPlayer = Math.floor(enemyCmd.damage * tradeMultiplier);
 					damageToEnemy = Math.floor(playerCmd.damage * tradeMultiplier);
-					log = `${playerEmoji} 对攻 ${enemyEmoji} → 互相 -${damageToPlayer}/-${damageToEnemy}HP`;
+					log = `${commandDisplay} → ${playerEmoji} 对攻 ${enemyEmoji} → 互相 -${damageToPlayer}/-${damageToEnemy}HP`;
 				}
 			} else if (playerCat === 'block' && enemyCat === 'block') {
-				log = `${playerEmoji} 对峙 ${enemyEmoji}`;
+				log = `${commandDisplay} → ${playerEmoji} 对峙 ${enemyEmoji}`;
 			} else if (playerCat === 'throw' && enemyCat === 'throw') {
 				damageToPlayer = Math.floor(enemyCmd.damage * tradeMultiplier);
 				damageToEnemy = Math.floor(playerCmd.damage * tradeMultiplier);
-				log = `${playerEmoji} 互投 ${enemyEmoji} → 互相 -${damageToPlayer}/-${damageToEnemy}HP`;
+				log = `${commandDisplay} → ${playerEmoji} 互投 ${enemyEmoji} → 互相 -${damageToPlayer}/-${damageToEnemy}HP`;
 			} else {
-				log = `${playerEmoji} 抵消 ${enemyEmoji}`;
+				log = `${commandDisplay} → ${playerEmoji} 抵消 ${enemyEmoji}`;
 			}
 			return { damageToPlayer, damageToEnemy, log };
 		}
