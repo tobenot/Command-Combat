@@ -165,10 +165,10 @@ export function BattleInterface({ state, onCommandSelect, onGameStart, onRestart
 				</div>
 			</div>
 
-			{/* 主内容区域 - 左右各一半 */}
-			<div className="flex-1 flex">
-				{/* 左侧：战斗日志 */}
-				<div className="w-1/2 bg-[#16213e] border-r border-gray-600 p-3 overflow-y-auto" ref={combatLogRef}>
+		{/* 主内容区域 - 左右各一半 */}
+		<div className="flex-1 flex min-h-0">
+			{/* 左侧：战斗日志 */}
+			<div className="w-1/2 bg-[#16213e] border-r border-gray-600 p-3 overflow-y-auto min-h-0" ref={combatLogRef}>
 					<div className="text-sm font-semibold text-gray-300 mb-2">[战斗日志]</div>
 					<div className="space-y-1">
 						{state.combatLog.map((log, index) => {
@@ -197,8 +197,8 @@ export function BattleInterface({ state, onCommandSelect, onGameStart, onRestart
 					</div>
 				</div>
 
-				{/* 右侧：控制面板 */}
-				<div className="w-1/2 bg-[#16213e] flex flex-col">
+		{/* 右侧：控制面板 */}
+		<div className="w-1/2 bg-[#16213e] flex flex-col min-h-0">
 					{/* 距离可视化 */}
 					<div className="p-3 border-b border-gray-600">
 						<div className="text-sm font-semibold text-gray-300 mb-2">[战场距离]</div>
@@ -223,8 +223,8 @@ export function BattleInterface({ state, onCommandSelect, onGameStart, onRestart
 						</div>
 					</div>
 
-					{/* 指令面板 - 可滑动 */}
-					<div className="flex-1 p-3 overflow-y-auto">
+				{/* 指令面板 - 可滑动 */}
+				<div className="flex-1 p-3 overflow-y-auto min-h-0">
 						<div className="text-sm font-semibold text-gray-300 mb-2">[指令面板]</div>
 						<div className="grid grid-cols-2 gap-2">
 							{state.player.commands.map((command) => {
