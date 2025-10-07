@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { BattleState, Command } from '@/games/command-battle/types';
 
 interface BattleInterfaceProps {
@@ -8,6 +9,13 @@ interface BattleInterfaceProps {
 }
 
 export function BattleInterface({ state, onCommandSelect, onGameStart, onRestart }: BattleInterfaceProps) {
+	const combatLogRef = useRef<HTMLDivElement>(null);
+
+	useEffect(() => {
+		if (combatLogRef.current) {
+			combatLogRef.current.scrollTop = combatLogRef.current.scrollHeight;
+		}
+	}, [state.combatLog]);
 	const getHpBar = (current: number, max: number) => {
 		const percentage = (current / max) * 100;
 		const filled = Math.ceil(percentage / 10);
@@ -163,7 +171,7 @@ export function BattleInterface({ state, onCommandSelect, onGameStart, onRestart
 			</div>
 
 			{/* 战斗日志 */}
-			<div className="bg-[#16213e] p-4 rounded-lg mb-4 flex-1 overflow-y-auto">
+			<div className="bg-[#16213e] p-4 rounded-lg mb-4 flex-1 overflow-y-auto" ref={combatLogRef}>
 				<h3 className="font-semibold mb-2">[战斗日志]</h3>
 				<div className="space-y-1">
 					{state.combatLog.map((log, index) => (
