@@ -203,7 +203,7 @@ class CombatService {
 
 	public processTurn(state: BattleState): BattleState {
 		const newState = { ...state };
-		
+
 		if (!newState.playerCommand || !newState.enemyCommand) {
 			return newState;
 		}
@@ -211,41 +211,16 @@ class CombatService {
 		const playerCmd = newState.playerCommand;
 		const enemyCmd = newState.enemyCommand;
 
-		let playerDamage = 0;
-		let enemyDamage = 0;
-		let logEntry = '';
+		const { damageToPlayer, damageToEnemy, log } = this.resolveAndCompute(playerCmd, enemyCmd, newState.distance, newState.player.name, newState.enemy.name);
 
-		if (this.isCommandEffective(playerCmd, newState.distance) && this.isCommandEffective(enemyCmd, newState.distance)) {
-			const result = this.resolveCommands(playerCmd, enemyCmd);
-			
-			if (result.winner === 'player') {
-				enemyDamage = this.calculateDamage(playerCmd, enemyCmd, 'player');
-				logEntry = this.generateCombatLog(playerCmd, enemyCmd, 'player', enemyDamage);
-			} else if (result.winner === 'enemy') {
-				playerDamage = this.calculateDamage(playerCmd, enemyCmd, 'enemy');
-				logEntry = this.generateCombatLog(playerCmd, enemyCmd, 'enemy', playerDamage);
-			} else {
-				logEntry = this.generateCombatLog(playerCmd, enemyCmd, 'tie', 0);
-			}
-		} else {
-			if (this.isCommandEffective(playerCmd, newState.distance)) {
-				enemyDamage = playerCmd.damage;
-				logEntry = `${newState.player.name}使用了[${playerCmd.name}]，${newState.enemy.name}没有有效应对！`;
-			} else if (this.isCommandEffective(enemyCmd, newState.distance)) {
-				playerDamage = enemyCmd.damage;
-				logEntry = `${newState.enemy.name}使用了[${enemyCmd.name}]，${newState.player.name}没有有效应对！`;
-			} else {
-				logEntry = '双方都没有有效的行动！';
-			}
-		}
-
-		newState.player.currentHp = Math.max(0, newState.player.currentHp - playerDamage);
-		newState.enemy.currentHp = Math.max(0, newState.enemy.currentHp - enemyDamage);
+		newState.player.currentHp = Math.max(0, newState.player.currentHp - damageToPlayer);
+		newState.enemy.currentHp = Math.max(0, newState.enemy.currentHp - damageToEnemy);
 
 		newState.player.currentMeter = Math.min(100, newState.player.currentMeter + playerCmd.meterGain);
 		newState.enemy.currentMeter = Math.min(100, newState.enemy.currentMeter + enemyCmd.meterGain);
 
-		newState.combatLog.push(logEntry);
+
+		newState.combatLog.push(log);
 
 		newState.distance = this.updateDistance(newState.distance, playerCmd, enemyCmd);
 
@@ -270,69 +245,148 @@ class CombatService {
 		return command.effectiveDistance.includes(distance);
 	}
 
-	private calculateDamage(attackerCmd: Command, defenderCmd: Command, winner: 'player' | 'enemy'): number {
-		const baseDamage = winner === 'player' ? attackerCmd.damage : defenderCmd.damage;
-		const defenderType = winner === 'player' ? defenderCmd.type : attackerCmd.type;
-		
-		if (defenderType === 'block') {
-			return Math.floor(baseDamage * 0.3);
-		}
-		
-		return baseDamage;
+	private getCategory(type: Command['type']): 'attack' | 'throw' | 'block' | 'move' {
+		if (type === 'light_attack' || type === 'heavy_attack' || type === 'special') return 'attack';
+		if (type === 'throw') return 'throw';
+		if (type === 'block') return 'block';
+		return 'move';
 	}
 
-	private resolveCommands(playerCmd: Command, enemyCmd: Command): { winner: 'player' | 'enemy' | 'tie' } {
-		const isPlayerAttack = playerCmd.type === 'light_attack' || playerCmd.type === 'heavy_attack' || playerCmd.type === 'special';
-		const isEnemyAttack = enemyCmd.type === 'light_attack' || enemyCmd.type === 'heavy_attack' || enemyCmd.type === 'special';
-		const isPlayerThrow = playerCmd.type === 'throw';
-		const isEnemyThrow = enemyCmd.type === 'throw';
-		const isPlayerBlock = playerCmd.type === 'block';
-		const isEnemyBlock = enemyCmd.type === 'block';
-		const isPlayerMove = playerCmd.type === 'advance' || playerCmd.type === 'retreat';
-		const isEnemyMove = enemyCmd.type === 'advance' || enemyCmd.type === 'retreat';
+	private rps(left: 'attack' | 'throw' | 'block', right: 'attack' | 'throw' | 'block'): 'left' | 'right' | 'neutral' {
+		if (left === right) return 'neutral';
+		if (left === 'attack' && right === 'throw') return 'left';
+		if (left === 'throw' && right === 'block') return 'left';
+		if (left === 'block' && right === 'attack') return 'left';
+		return 'right';
+	}
 
-		if (isPlayerAttack && isEnemyThrow) {
-			return { winner: 'player' };
+	private resolveAndCompute(playerCmd: Command, enemyCmd: Command, distance: Distance, playerName: string, enemyName: string): { damageToPlayer: number; damageToEnemy: number; log: string } {
+		const playerEffective = this.isCommandEffective(playerCmd, distance);
+		const enemyEffective = this.isCommandEffective(enemyCmd, distance);
+
+		const playerCat = this.getCategory(playerCmd.type);
+		const enemyCat = this.getCategory(enemyCmd.type);
+
+		const advantageMultiplier = 1.2;
+		const tradeMultiplier = 0.7;
+		const blockReduction = 0.3;
+
+		let damageToPlayer = 0;
+		let damageToEnemy = 0;
+		let log = '';
+
+		if (!playerEffective && !enemyEffective) {
+			log = '双方都没有有效的行动！';
+			return { damageToPlayer, damageToEnemy, log };
 		}
-		if (isPlayerThrow && isEnemyBlock) {
-			return { winner: 'player' };
-		}
-		if (isPlayerBlock && isEnemyAttack) {
-			return { winner: 'player' };
-		}
-		if (isPlayerAttack && isEnemyAttack) {
-			if (playerCmd.priority > enemyCmd.priority) {
-				return { winner: 'player' };
-			} else if (enemyCmd.priority > playerCmd.priority) {
-				return { winner: 'enemy' };
+
+		if (playerEffective && !enemyEffective) {
+			if (playerCat === 'attack' || playerCat === 'throw') {
+				damageToEnemy = playerCmd.damage;
+				log = `${playerName}使用了[${playerCmd.name}]，${enemyName}动作落空，造成${damageToEnemy}伤害！`;
 			} else {
-				return { winner: 'tie' };
+				log = `${playerName}使用了[${playerCmd.name}]，${enemyName}动作落空！`;
+			}
+			return { damageToPlayer, damageToEnemy, log };
+		}
+
+		if (!playerEffective && enemyEffective) {
+			if (enemyCat === 'attack' || enemyCat === 'throw') {
+				damageToPlayer = enemyCmd.damage;
+				log = `${enemyName}使用了[${enemyCmd.name}]，${playerName}动作落空，你受到${damageToPlayer}伤害！`;
+			} else {
+				log = `${enemyName}使用了[${enemyCmd.name}]，${playerName}动作落空！`;
+			}
+			return { damageToPlayer, damageToEnemy, log };
+		}
+
+		if (playerCat === 'move' && enemyCat === 'move') {
+			log = '双方调整脚步，暂未交锋。';
+			return { damageToPlayer, damageToEnemy, log };
+		}
+
+		if (playerCat === 'move' && enemyCat !== 'move') {
+			if (enemyCat === 'attack' || enemyCat === 'throw') {
+				damageToPlayer = enemyCmd.damage;
+				log = `${playerName}选择[${playerCmd.name}]移动，${enemyName}的[${enemyCmd.name}]命中，你受到${damageToPlayer}伤害！`;
+			} else {
+				log = `${playerName}选择[${playerCmd.name}]，${enemyName}的[${enemyCmd.name}]未造成伤害。`;
+			}
+			return { damageToPlayer, damageToEnemy, log };
+		}
+
+		if (enemyCat === 'move' && playerCat !== 'move') {
+			if (playerCat === 'attack' || playerCat === 'throw') {
+				damageToEnemy = playerCmd.damage;
+				log = `${enemyName}选择[${enemyCmd.name}]移动，${playerName}的[${playerCmd.name}]命中，造成${damageToEnemy}伤害！`;
+			} else {
+				log = `${enemyName}选择[${enemyCmd.name}]，${playerName}的[${playerCmd.name}]未造成伤害。`;
+			}
+			return { damageToPlayer, damageToEnemy, log };
+		}
+
+		if (playerCat !== 'move' && enemyCat !== 'move') {
+			const rpsResult = this.rps('' + playerCat as 'attack' | 'throw' | 'block', '' + enemyCat as 'attack' | 'throw' | 'block');
+			if (rpsResult === 'left') {
+				if (enemyCat === 'block' && playerCat === 'attack') {
+					const dmg = Math.floor(playerCmd.damage * blockReduction);
+					damageToEnemy = dmg;
+					log = `你以[${playerCmd.name}]克制对手的[${enemyCmd.name}]，被格挡削减，造成${dmg}伤害。`;
+				} else {
+					const dmg = Math.floor(playerCmd.damage * advantageMultiplier);
+					damageToEnemy = dmg;
+					log = `你以[${playerCmd.name}]克制对手的[${enemyCmd.name}]，造成${dmg}伤害！`;
+				}
+				return { damageToPlayer, damageToEnemy, log };
+			} else if (rpsResult === 'right') {
+				if (playerCat === 'block' && enemyCat === 'attack') {
+					const dmg = Math.floor(enemyCmd.damage * blockReduction);
+					damageToPlayer = dmg;
+					log = `对手以[${enemyCmd.name}]克制你的[${playerCmd.name}]，被格挡削减，你受到${dmg}伤害。`;
+				} else {
+					const dmg = Math.floor(enemyCmd.damage * advantageMultiplier);
+					damageToPlayer = dmg;
+					log = `对手以[${enemyCmd.name}]克制你的[${playerCmd.name}]，你受到${dmg}伤害！`;
+				}
+				return { damageToPlayer, damageToEnemy, log };
+			} else {
+				if (playerCat === 'attack' && enemyCat === 'attack') {
+					if (playerCmd.priority > enemyCmd.priority) {
+						const dmg = playerCmd.damage;
+						damageToEnemy = dmg;
+						log = `双方以攻对攻，你的优先级更高，[${playerCmd.name}]命中造成${dmg}伤害！`;
+					} else if (enemyCmd.priority > playerCmd.priority) {
+						const dmg = enemyCmd.damage;
+						damageToPlayer = dmg;
+						log = `双方以攻对攻，对手优先级更高，[${enemyCmd.name}]命中，你受到${dmg}伤害！`;
+					} else {
+						const dmgP = Math.floor(playerCmd.damage * tradeMultiplier);
+						const dmgE = Math.floor(enemyCmd.damage * tradeMultiplier);
+						damageToPlayer = dmgE;
+						damageToEnemy = dmgP;
+						log = `双方以攻对攻同时命中，你受到${dmgE}伤害，对手受到${dmgP}伤害。`;
+					}
+					return { damageToPlayer, damageToEnemy, log };
+				}
+				if (playerCat === 'block' && enemyCat === 'block') {
+					log = '双方对峙观望，均选择防守。';
+					return { damageToPlayer, damageToEnemy, log };
+				}
+				if (playerCat === 'throw' && enemyCat === 'throw') {
+					const dmgP = Math.floor(playerCmd.damage * tradeMultiplier);
+					const dmgE = Math.floor(enemyCmd.damage * tradeMultiplier);
+					damageToPlayer = dmgE;
+					damageToEnemy = dmgP;
+					log = `双方同时尝试投技，互相受创：你${dmgE}，对手${dmgP}。`;
+					return { damageToPlayer, damageToEnemy, log };
+				}
+				log = '双方行动相互抵消。';
+				return { damageToPlayer, damageToEnemy, log };
 			}
 		}
-		if (isPlayerMove && isEnemyMove) {
-			return { winner: 'tie' };
-		}
-		if (isPlayerMove && isEnemyBlock) {
-			return { winner: 'tie' };
-		}
-		if (isPlayerBlock && isEnemyMove) {
-			return { winner: 'tie' };
-		}
-		if (isPlayerBlock && isEnemyBlock) {
-			return { winner: 'tie' };
-		}
-		
-		return { winner: 'tie' };
-	}
 
-	private generateCombatLog(playerCmd: Command, enemyCmd: Command, winner: 'player' | 'enemy' | 'tie', damage: number): string {
-		if (winner === 'player') {
-			return `你使用了[${playerCmd.name}]，对手使用了[${enemyCmd.name}]！你的攻击命中了，造成${damage}点伤害！`;
-		} else if (winner === 'enemy') {
-			return `你使用了[${playerCmd.name}]，对手使用了[${enemyCmd.name}]！对手的攻击命中了，你受到${damage}点伤害！`;
-		} else {
-			return `你使用了[${playerCmd.name}]，对手使用了[${enemyCmd.name}]！双方势均力敌！`;
-		}
+		log = '本回合未能分出胜负。';
+		return { damageToPlayer, damageToEnemy, log };
 	}
 
 	private updateDistance(currentDistance: Distance, playerCmd: Command, enemyCmd: Command): Distance {
