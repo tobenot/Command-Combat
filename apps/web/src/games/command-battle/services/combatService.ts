@@ -1,4 +1,4 @@
-import { BattleState, Command, Distance, GameConfig } from '@/games/carrot-card-demo/types';
+import { BattleState, Command, Distance, GameConfig } from '@/games/command-battle/types';
 
 class CombatService {
 	private config: GameConfig = {

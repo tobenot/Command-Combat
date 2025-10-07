@@ -1,4 +1,4 @@
-import { GameContainer } from './games/carrot-card-demo/components/GameContainer';
+import { GameContainer } from './games/command-battle/components/GameContainer';
 import { GameShell } from '@ui/GameShell';
 
 function App() {

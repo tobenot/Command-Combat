@@ -1,8 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
-import { BattleState, Command } from '@/games/carrot-card-demo/types';
-import { combatService } from '@/games/carrot-card-demo/services/combatService';
-import { aiService } from '@/games/carrot-card-demo/services/aiService';
-import { BattleInterface } from '@/games/carrot-card-demo/components/BattleInterface';
+import { BattleState, Command } from '@/games/command-battle/types';
+import { combatService } from '@/games/command-battle/services/combatService';
+import { aiService } from '@/games/command-battle/services/aiService';
+import { BattleInterface } from '@/games/command-battle/components/BattleInterface';
 
 export function GameContainer() {
 	const [battleState, setBattleState] = useState<BattleState | null>(null);

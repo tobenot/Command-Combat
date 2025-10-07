@@ -1,4 +1,4 @@
-import { BattleState, Command, AIBehavior } from '@/games/carrot-card-demo/types';
+import { BattleState, Command, AIBehavior } from '@/games/command-battle/types';
 
 class AIService {
 	private enemies: AIBehavior[] = [];

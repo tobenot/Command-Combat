@@ -1,4 +1,4 @@
-import { BattleState, Command } from '@/games/carrot-card-demo/types';
+import { BattleState, Command } from '@/games/command-battle/types';
 
 interface BattleInterfaceProps {
 	state: BattleState;
