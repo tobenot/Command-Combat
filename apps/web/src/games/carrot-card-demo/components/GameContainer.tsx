@@ -1,77 +1,103 @@
-import { useEffect, useState } from 'react';
-import { Card as CardType } from '@/games/carrot-card-demo/types';
-import { cardService } from '@/games/carrot-card-demo/services/cardService';
-import { Card } from '@/games/carrot-card-demo/components/Card';
-import { MainMenu } from '@/games/carrot-card-demo/components/MainMenu';
+import { useEffect, useState, useCallback } from 'react';
+import { BattleState, Command } from '@/games/carrot-card-demo/types';
+import { combatService } from '@/games/carrot-card-demo/services/cardService';
+import { aiService } from '@/games/carrot-card-demo/services/aiService';
+import { BattleInterface } from '@/games/carrot-card-demo/components/BattleInterface';
 
 export function GameContainer() {
-  const [currentCard, setCurrentCard] = useState<CardType | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isGameStarted, setIsGameStarted] = useState(false);
+	const [battleState, setBattleState] = useState<BattleState | null>(null);
+	const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    const initializeGame = async () => {
-      try {
-        setIsLoading(true);
-        await cardService.loadCardData();
-        const firstCard = cardService.drawCard();
-        setCurrentCard(firstCard);
-        setError(null);
-      } catch (err) {
-        console.error("Failed to initialize game:", err);
-        setError("Failed to initialize the game. Please check the configuration or contact the developer.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+	const initializeGame = useCallback(() => {
+		setIsLoading(true);
+		const initialState = combatService.initializeGame();
+		setBattleState(initialState);
+		setIsLoading(false);
+	}, []);
 
-    if (isGameStarted) {
-      initializeGame();
-    }
-  }, [isGameStarted]);
+	const handleGameStart = useCallback(() => {
+		initializeGame();
+	}, [initializeGame]);
 
-  const handleChoice = () => {
-    // Simplified logic: always draw the next card
-    const nextCard = cardService.drawCard();
-    if (nextCard) {
-      setCurrentCard(nextCard);
-    } else {
-      setError("No more cards available!");
-    }
-  };
+	const handleRestart = useCallback(() => {
+		initializeGame();
+	}, [initializeGame]);
 
-  const handleGameStart = () => {
-    setIsGameStarted(true);
-  };
+	const handleCommandSelect = useCallback((command: Command) => {
+		if (!battleState || battleState.gameStatus !== 'playing') return;
 
-  // The main layout for the game is now defined here.
-  return (
-    <div className="w-full h-full grid grid-cols-[20fr_60fr_20fr] bg-[#1a1a2e]">
-      {!isGameStarted ? (
-        <MainMenu onStart={handleGameStart} />
-      ) : isLoading ? (
-        <div className="game-overlay">
-          <h2>Loading...</h2>
-          <p>Preparing your adventure...</p>
-        </div>
-      ) : error ? (
-        <div className="game-overlay">
-          <h2>Error</h2>
-          <p>{error}</p>
-        </div>
-      ) : currentCard ? (
-        <Card
-          key={currentCard.id}
-          card={currentCard}
-          onChoice={handleChoice}
-        />
-      ) : (
-        <div className="game-overlay">
-          <h2>Game Complete</h2>
-          <p>Thank you for playing!</p>
-        </div>
-      )}
-    </div>
-  );
+		const newState = { ...battleState };
+		newState.playerCommand = command;
+		newState.enemyCommand = aiService.selectEnemyCommand(newState);
+		newState.phase = 'commit';
+
+		setBattleState(newState);
+
+		setTimeout(() => {
+			const resolvedState = combatService.processTurn(newState);
+			setBattleState(resolvedState);
+		}, 1000);
+	}, [battleState]);
+
+	useEffect(() => {
+		if (!battleState || battleState.gameStatus !== 'playing') return;
+
+		if (battleState.phase === 'decision' && battleState.timeRemaining > 0) {
+			const timer = setTimeout(() => {
+				setBattleState(prev => {
+					if (!prev) return null;
+					return {
+						...prev,
+						timeRemaining: prev.timeRemaining - 1
+					};
+				});
+			}, 1000);
+
+			return () => clearTimeout(timer);
+		} else if (battleState.phase === 'decision' && battleState.timeRemaining <= 0) {
+			const randomCommand = battleState.player.commands[
+				Math.floor(Math.random() * battleState.player.commands.length)
+			];
+			handleCommandSelect(randomCommand);
+		}
+	}, [battleState, handleCommandSelect]);
+
+	if (isLoading) {
+		return (
+			<div className="w-full h-full flex items-center justify-center bg-[#1a1a2e] text-white">
+				<div className="text-center">
+					<h2 className="text-2xl font-bold mb-4">加载中...</h2>
+					<p>正在准备你的试炼...</p>
+				</div>
+			</div>
+		);
+	}
+
+	if (!battleState) {
+		return (
+			<div className="w-full h-full flex items-center justify-center bg-[#1a1a2e] text-white">
+				<div className="text-center">
+					<h1 className="text-4xl font-bold mb-8">指令对决：起源</h1>
+					<p className="text-lg mb-8">通过预判AI的行动，使用克制的指令来取得胜利</p>
+					<button
+						onClick={handleGameStart}
+						className="px-8 py-4 bg-blue-600 hover:bg-blue-700 rounded-lg text-xl font-semibold"
+					>
+						开始试炼
+					</button>
+				</div>
+			</div>
+		);
+	}
+
+	return (
+		<div className="w-full h-full bg-[#1a1a2e]">
+			<BattleInterface
+				state={battleState}
+				onCommandSelect={handleCommandSelect}
+				onGameStart={handleGameStart}
+				onRestart={handleRestart}
+			/>
+		</div>
+	);
 } 
