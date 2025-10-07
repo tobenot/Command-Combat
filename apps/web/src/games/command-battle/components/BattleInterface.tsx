@@ -228,8 +228,7 @@ export function BattleInterface({ state, onCommandSelect, onGameStart, onRestart
 						<div className="text-sm font-semibold text-gray-300 mb-2">[指令面板]</div>
 						<div className="grid grid-cols-2 gap-2">
 							{state.player.commands.map((command) => {
-								const isDisabled = command.meterCost > state.player.currentMeter || 
-									!command.effectiveDistance.includes(state.distance);
+								const isDisabled = command.meterCost > state.player.currentMeter;
 								
 								return (
 									<button

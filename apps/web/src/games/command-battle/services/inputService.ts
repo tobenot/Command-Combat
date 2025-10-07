@@ -17,13 +17,22 @@ export interface InputState {
 		input: InputDirection | InputButton;
 		timestamp: number;
 	}>;
+	isInputEnabled: boolean;
+	decisionBuffer: Array<{
+		input: InputDirection | InputButton;
+		timestamp: number;
+	}>;
+	lastValidCommand: string | null;
 }
 
 class InputService {
 	private inputState: InputState = {
 		currentSequence: [],
 		lastInputTime: 0,
-		sequenceBuffer: []
+		sequenceBuffer: [],
+		isInputEnabled: true,
+		decisionBuffer: [],
+		lastValidCommand: null
 	};
 
 	private sequences: InputSequence[] = [
@@ -54,10 +63,10 @@ class InputService {
 		{
 			id: 'combo_004',
 			name: '投技连招',
-			sequence: ['down', 'down', 'punch'],
-			timeWindow: 800,
+			sequence: ['punch', 'kick'],
+			timeWindow: 1000,
 			command: 'sheath_strike',
-			description: '快速投技连招'
+			description: '投技连招'
 		},
 		{
 			id: 'combo_005',
@@ -92,42 +101,53 @@ class InputService {
 	}
 
 	public processInput(key: string): string | null {
+		if (!this.inputState.isInputEnabled) {
+			console.log(`[InputService] 输入被禁用，忽略按键: ${key}`);
+			return null;
+		}
+
 		const input = this.keyMapping[key];
 		if (!input) return null;
-
-		if (this.pressedKeys.has('KeyU') && this.pressedKeys.has('KeyI')) {
-			this.clearSequence();
-			return 'throw_combo';
-		}
 
 		const now = Date.now();
 		this.inputState.lastInputTime = now;
 
-		this.inputState.sequenceBuffer.push({
+		this.inputState.decisionBuffer.push({
 			input,
 			timestamp: now
 		});
 
-		this.cleanOldInputs(now);
+		this.cleanOldDecisionInputs(now);
 
 		const matchedSequence = this.findMatchingSequence();
 		if (matchedSequence) {
-			this.clearSequence();
-			return matchedSequence.command;
+			this.inputState.lastValidCommand = matchedSequence.command;
+			console.log(`[InputService] 连招匹配: ${matchedSequence.name} -> ${matchedSequence.command}`);
+		} else {
+			const singleKeyCommand = this.getSingleKeyCommand(key);
+			if (singleKeyCommand) {
+				this.inputState.lastValidCommand = singleKeyCommand;
+				console.log(`[InputService] 单键指令: ${key} -> ${singleKeyCommand}`);
+			}
 		}
 
 		return null;
 	}
 
-	private cleanOldInputs(now: number): void {
-		const maxAge = 2000;
-		this.inputState.sequenceBuffer = this.inputState.sequenceBuffer.filter(
+	public getFinalCommand(): string | null {
+		return this.inputState.lastValidCommand;
+	}
+
+
+	private cleanOldDecisionInputs(now: number): void {
+		const maxAge = 5000;
+		this.inputState.decisionBuffer = this.inputState.decisionBuffer.filter(
 			input => now - input.timestamp < maxAge
 		);
 	}
 
 	private findMatchingSequence(): InputSequence | null {
-		const buffer = this.inputState.sequenceBuffer.map(input => input.input);
+		const buffer = this.inputState.decisionBuffer.map(input => input.input);
 		
 		for (const sequence of this.sequences) {
 			if (this.isSequenceMatch(buffer, sequence.sequence)) {
@@ -153,7 +173,7 @@ class InputService {
 	}
 
 	public getCurrentSequence(): (InputDirection | InputButton)[] {
-		return this.inputState.sequenceBuffer.map(input => input.input);
+		return this.inputState.decisionBuffer.map(input => input.input);
 	}
 
 	public getSequenceDisplay(): string {
@@ -177,7 +197,9 @@ class InputService {
 
 	public clearSequence(): void {
 		this.inputState.sequenceBuffer = [];
+		this.inputState.decisionBuffer = [];
 		this.inputState.currentSequence = [];
+		this.inputState.lastValidCommand = null;
 	}
 
 	public getAllSequences(): InputSequence[] {
@@ -190,6 +212,48 @@ class InputService {
 
 	public removeSequence(id: string): void {
 		this.sequences = this.sequences.filter(seq => seq.id !== id);
+	}
+
+	public setInputEnabled(enabled: boolean): void {
+		this.inputState.isInputEnabled = enabled;
+		console.log(`[InputService] 输入状态变更: ${enabled ? '启用' : '禁用'}`);
+		if (!enabled) {
+			this.clearSequence();
+		}
+	}
+
+	public startDecisionPhase(): void {
+		this.clearSequence();
+		this.inputState.isInputEnabled = true;
+		console.log(`[InputService] 开始决策阶段`);
+	}
+
+	public endDecisionPhase(): string | null {
+		const finalCommand = this.getFinalCommand();
+		console.log(`[InputService] 决策阶段结束，最终指令: ${finalCommand || '无'}`);
+		this.clearSequence();
+		return finalCommand;
+	}
+
+	public isInputEnabled(): boolean {
+		return this.inputState.isInputEnabled;
+	}
+
+	private getSingleKeyCommand(key: string): string | null {
+		const singleKeyMapping: Record<string, string> = {
+			'KeyU': 'light_slash',
+			'KeyI': 'light_kick', 
+			'KeyJ': 'heavy_slash',
+			'KeyK': 'heavy_kick',
+			'KeyL': 'swallow_return',
+			'KeyW': 'jump',
+			'KeyS': 'block',
+			'KeyA': 'retreat',
+			'KeyD': 'advance',
+			'KeyQ': 'crouch'
+		};
+
+		return singleKeyMapping[key] || null;
 	}
 }
 

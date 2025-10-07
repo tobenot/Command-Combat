@@ -84,11 +84,11 @@ class CombatService {
 				damage: 20,
 				meterCost: 0,
 				meterGain: 5,
-				effectiveDistance: ['near'],
+				effectiveDistance: ['near', 'mid', 'far'],
 				priority: 1,
 				canInterrupt: false,
 				keyboardShortcut: 'U+I',
-				inputSequence: 'throw_combo',
+				inputSequence: 'combo_004',
 				isCombo: true
 			},
 			{
@@ -336,8 +336,8 @@ class CombatService {
 		const playerMeterFromDamage = Math.floor(damageToPlayer * 0.5);
 		const enemyMeterFromDamage = Math.floor(damageToEnemy * 0.5);
 
-		newState.player.currentMeter = Math.min(100, newState.player.currentMeter + playerMeterFromAction + playerMeterFromDamage);
-		newState.enemy.currentMeter = Math.min(100, newState.enemy.currentMeter + enemyMeterFromAction + enemyMeterFromDamage);
+		newState.player.currentMeter = Math.min(100, Math.max(0, newState.player.currentMeter - playerCmd.meterCost + playerMeterFromAction + playerMeterFromDamage));
+		newState.enemy.currentMeter = Math.min(100, Math.max(0, newState.enemy.currentMeter - enemyCmd.meterCost + enemyMeterFromAction + enemyMeterFromDamage));
 
 		newState.combatLog.push(log);
 

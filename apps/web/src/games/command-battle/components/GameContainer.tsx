@@ -13,6 +13,7 @@ export function GameContainer() {
 		setIsLoading(true);
 		const initialState = combatService.initializeGame();
 		setBattleState(initialState);
+		inputService.startDecisionPhase();
 		setIsLoading(false);
 	}, []);
 
@@ -27,6 +28,8 @@ export function GameContainer() {
 	const handleCommandSelect = useCallback((command: Command) => {
 		if (!battleState || battleState.gameStatus !== 'playing') return;
 
+		console.log(`[GameContainer] 选择指令: ${command.name}`);
+		
 		const newState = { ...battleState };
 		newState.playerCommand = command;
 		newState.enemyCommand = aiService.selectEnemyCommand(newState);
@@ -37,40 +40,26 @@ export function GameContainer() {
 		setTimeout(() => {
 			const resolvedState = combatService.processTurn(newState);
 			setBattleState(resolvedState);
+			inputService.startDecisionPhase();
 		}, 1000);
+	}, [battleState]);
+
+	const handleCommandPreview = useCallback((command: Command) => {
+		if (!battleState || battleState.gameStatus !== 'playing' || battleState.phase !== 'decision') return;
+
+		console.log(`[GameContainer] 预览指令: ${command.name}`);
+		
+		const newState = { ...battleState };
+		newState.playerCommand = command;
+		setBattleState(newState);
 	}, [battleState]);
 
 	const handleKeyDown = useCallback((event: KeyboardEvent) => {
 		if (!battleState || battleState.gameStatus !== 'playing' || battleState.phase !== 'decision') return;
 
 		inputService.handleKeyDown(event.code);
-
-		const comboCommand = inputService.processInput(event.code);
-		if (comboCommand) {
-			const command = battleState.player.commands.find(cmd => cmd.inputSequence === comboCommand);
-			if (command) {
-				const isDisabled = command.meterCost > battleState.player.currentMeter || 
-					!command.effectiveDistance.includes(battleState.distance);
-				
-				if (!isDisabled) {
-					handleCommandSelect(command);
-					return;
-				}
-			}
-		}
-
-		const key = event.key.toUpperCase();
-		const command = battleState.player.commands.find(cmd => cmd.keyboardShortcut === key);
-		
-		if (command) {
-			const isDisabled = command.meterCost > battleState.player.currentMeter || 
-				!command.effectiveDistance.includes(battleState.distance);
-			
-			if (!isDisabled) {
-				handleCommandSelect(command);
-			}
-		}
-	}, [battleState, handleCommandSelect]);
+		inputService.processInput(event.code);
+	}, [battleState]);
 
 	const handleKeyUp = useCallback((event: KeyboardEvent) => {
 		inputService.handleKeyUp(event.code);
@@ -92,10 +81,24 @@ export function GameContainer() {
 
 			return () => clearTimeout(timer);
 		} else if (battleState.phase === 'decision' && battleState.timeRemaining <= 0) {
-			const randomCommand = battleState.player.commands[
-				Math.floor(Math.random() * battleState.player.commands.length)
-			];
-			handleCommandSelect(randomCommand);
+			const finalCommandId = inputService.endDecisionPhase();
+			let selectedCommand: Command | null = null;
+
+			if (finalCommandId) {
+				selectedCommand = battleState.player.commands.find(cmd => cmd.id === finalCommandId) || null;
+			}
+
+			if (!selectedCommand && battleState.playerCommand) {
+				selectedCommand = battleState.playerCommand;
+			}
+
+			if (!selectedCommand) {
+				const lightAttackCommand = battleState.player.commands.find(cmd => cmd.type === 'light_attack');
+				selectedCommand = lightAttackCommand || battleState.player.commands[0];
+			}
+
+			console.log(`[GameContainer] 时间到，选择指令: ${selectedCommand.name}`);
+			handleCommandSelect(selectedCommand);
 		}
 	}, [battleState, handleCommandSelect]);
 
@@ -138,12 +141,12 @@ export function GameContainer() {
 
 	return (
 		<div className="w-full h-full bg-[#1a1a2e]">
-			<BattleInterface
-				state={battleState}
-				onCommandSelect={handleCommandSelect}
-				onGameStart={handleGameStart}
-				onRestart={handleRestart}
-			/>
+		<BattleInterface
+			state={battleState}
+			onCommandSelect={handleCommandPreview}
+			onGameStart={handleGameStart}
+			onRestart={handleRestart}
+		/>
 		</div>
 	);
 } 
