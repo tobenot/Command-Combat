@@ -174,11 +174,29 @@ export function BattleInterface({ state, onCommandSelect, onGameStart, onRestart
 			<div className="bg-[#16213e] p-4 rounded-lg mb-4 flex-1 overflow-y-auto" ref={combatLogRef}>
 				<h3 className="font-semibold mb-2">[战斗日志]</h3>
 				<div className="space-y-1">
-					{state.combatLog.map((log, index) => (
-						<div key={index} className="text-sm">
-							&gt; {log}
-						</div>
-					))}
+					{state.combatLog.map((log, index) => {
+						const isImportant = log.includes('HP') || log.includes('胜利') || log.includes('败北');
+						const isDamage = log.includes('HP');
+						const isVictory = log.includes('胜利');
+						const isDefeat = log.includes('败北');
+						
+						return (
+							<div 
+								key={index} 
+								className={`text-sm ${
+									isImportant ? 'font-semibold' : ''
+								} ${
+									isDamage ? 'text-yellow-300' : ''
+								} ${
+									isVictory ? 'text-green-400' : ''
+								} ${
+									isDefeat ? 'text-red-400' : ''
+								}`}
+							>
+								{log}
+							</div>
+						);
+					})}
 				</div>
 			</div>
 

@@ -39,7 +39,7 @@ class CombatService {
 			phase: 'decision',
 			timeRemaining: this.config.decisionTime,
 			isPlayerTurn: true,
-			combatLog: ['战斗开始！'],
+			combatLog: ['⚔️ 战斗开始'],
 			gameStatus: 'playing',
 			currentEnemyIndex: 0
 		};
@@ -211,7 +211,7 @@ class CombatService {
 		const playerCmd = newState.playerCommand;
 		const enemyCmd = newState.enemyCommand;
 
-		const { damageToPlayer, damageToEnemy, log } = this.resolveAndCompute(playerCmd, enemyCmd, newState.distance, newState.player.name, newState.enemy.name);
+		const { damageToPlayer, damageToEnemy, log } = this.resolveAndCompute(playerCmd, enemyCmd, newState.distance);
 
 		newState.player.currentHp = Math.max(0, newState.player.currentHp - damageToPlayer);
 		newState.enemy.currentHp = Math.max(0, newState.enemy.currentHp - damageToEnemy);
@@ -226,10 +226,10 @@ class CombatService {
 
 		if (newState.player.currentHp <= 0) {
 			newState.gameStatus = 'defeat';
-			newState.combatLog.push('你被击败了！');
+			newState.combatLog.push('💀 败北');
 		} else if (newState.enemy.currentHp <= 0) {
 			newState.gameStatus = 'victory';
-			newState.combatLog.push('你获得了胜利！');
+			newState.combatLog.push('🏆 胜利');
 		}
 
 		newState.round++;
@@ -260,7 +260,20 @@ class CombatService {
 		return 'right';
 	}
 
-	private resolveAndCompute(playerCmd: Command, enemyCmd: Command, distance: Distance, playerName: string, enemyName: string): { damageToPlayer: number; damageToEnemy: number; log: string } {
+	private getCommandEmoji(type: Command['type']): string {
+		switch (type) {
+			case 'light_attack': return '⚡';
+			case 'heavy_attack': return '💥';
+			case 'throw': return '🤜';
+			case 'block': return '🛡️';
+			case 'advance': return '➡️';
+			case 'retreat': return '⬅️';
+			case 'special': return '✨';
+			default: return '⚔️';
+		}
+	}
+
+	private resolveAndCompute(playerCmd: Command, enemyCmd: Command, distance: Distance): { damageToPlayer: number; damageToEnemy: number; log: string } {
 		const playerEffective = this.isCommandEffective(playerCmd, distance);
 		const enemyEffective = this.isCommandEffective(enemyCmd, distance);
 
@@ -274,19 +287,20 @@ class CombatService {
 		let damageToPlayer = 0;
 		let damageToEnemy = 0;
 		let log = '';
-		const prefix = `你使用了[${playerCmd.name}]，对手使用了[${enemyCmd.name}]！`;
+		const playerEmoji = this.getCommandEmoji(playerCmd.type);
+		const enemyEmoji = this.getCommandEmoji(enemyCmd.type);
 
 		if (!playerEffective && !enemyEffective) {
-			log = `${prefix}双方都没有有效的行动！`;
+			log = `❌ 双方行动无效`;
 			return { damageToPlayer, damageToEnemy, log };
 		}
 
 		if (playerEffective && !enemyEffective) {
 			if (playerCat === 'attack' || playerCat === 'throw') {
 				damageToEnemy = playerCmd.damage;
-				log = `${prefix}${enemyName}动作落空，造成${damageToEnemy}伤害！`;
+				log = `${playerEmoji} 命中! ${enemyEmoji} 落空 → -${damageToEnemy}HP`;
 			} else {
-				log = `${prefix}${enemyName}动作落空！`;
+				log = `${playerEmoji} 成功 ${enemyEmoji} 落空`;
 			}
 			return { damageToPlayer, damageToEnemy, log };
 		}
@@ -294,24 +308,24 @@ class CombatService {
 		if (!playerEffective && enemyEffective) {
 			if (enemyCat === 'attack' || enemyCat === 'throw') {
 				damageToPlayer = enemyCmd.damage;
-				log = `${prefix}${playerName}动作落空，你受到${damageToPlayer}伤害！`;
+				log = `${playerEmoji} 落空 ${enemyEmoji} 命中! → -${damageToPlayer}HP`;
 			} else {
-				log = `${prefix}${playerName}动作落空！`;
+				log = `${playerEmoji} 落空 ${enemyEmoji} 成功`;
 			}
 			return { damageToPlayer, damageToEnemy, log };
 		}
 
 		if (playerCat === 'move' && enemyCat === 'move') {
-			log = `${prefix}双方调整脚步，暂未交锋。`;
+			log = `🚶 双方调整位置`;
 			return { damageToPlayer, damageToEnemy, log };
 		}
 
 		if (playerCat === 'move' && enemyCat !== 'move') {
 			if (enemyCat === 'attack' || enemyCat === 'throw') {
 				damageToPlayer = enemyCmd.damage;
-				log = `${prefix}${enemyName}命中，你受到${damageToPlayer}伤害！`;
+				log = `🚶 ${enemyEmoji} 命中! → -${damageToPlayer}HP`;
 			} else {
-				log = `${prefix}对手未造成伤害。`;
+				log = `🚶 ${enemyEmoji} 防御`;
 			}
 			return { damageToPlayer, damageToEnemy, log };
 		}
@@ -319,9 +333,9 @@ class CombatService {
 		if (enemyCat === 'move' && playerCat !== 'move') {
 			if (playerCat === 'attack' || playerCat === 'throw') {
 				damageToEnemy = playerCmd.damage;
-				log = `${prefix}你的攻击命中，造成${damageToEnemy}伤害！`;
+				log = `${playerEmoji} 命中! 🚶 → -${damageToEnemy}HP`;
 			} else {
-				log = `${prefix}你未造成伤害。`;
+				log = `${playerEmoji} 防御 🚶`;
 			}
 			return { damageToPlayer, damageToEnemy, log };
 		}
@@ -332,22 +346,22 @@ class CombatService {
 				if (enemyCat === 'block' && playerCat === 'attack') {
 					const dmg = Math.floor(playerCmd.damage * blockReduction);
 					damageToEnemy = dmg;
-					log = `${prefix}你的指令克制对手，被格挡削减，造成${dmg}伤害。`;
+					log = `${playerEmoji} 克制 ${enemyEmoji} → -${dmg}HP (格挡)`;
 				} else {
 					const dmg = Math.floor(playerCmd.damage * advantageMultiplier);
 					damageToEnemy = dmg;
-					log = `${prefix}你的指令克制对手，造成${dmg}伤害！`;
+					log = `${playerEmoji} 克制 ${enemyEmoji} → -${dmg}HP`;
 				}
 				return { damageToPlayer, damageToEnemy, log };
 			} else if (rpsResult === 'right') {
 				if (playerCat === 'block' && enemyCat === 'attack') {
 					const dmg = Math.floor(enemyCmd.damage * blockReduction);
 					damageToPlayer = dmg;
-					log = `${prefix}对手克制你，被格挡削减，你受到${dmg}伤害。`;
+					log = `${playerEmoji} 被克 ${enemyEmoji} → -${dmg}HP (格挡)`;
 				} else {
 					const dmg = Math.floor(enemyCmd.damage * advantageMultiplier);
 					damageToPlayer = dmg;
-					log = `${prefix}对手克制你，你受到${dmg}伤害！`;
+					log = `${playerEmoji} 被克 ${enemyEmoji} → -${dmg}HP`;
 				}
 				return { damageToPlayer, damageToEnemy, log };
 			} else {
@@ -355,22 +369,22 @@ class CombatService {
 					if (playerCmd.priority > enemyCmd.priority) {
 						const dmg = playerCmd.damage;
 						damageToEnemy = dmg;
-						log = `${prefix}双方以攻对攻，你的优先级更高，命中造成${dmg}伤害！`;
+						log = `${playerEmoji} 对攻 ${enemyEmoji} → -${dmg}HP (先手)`;
 					} else if (enemyCmd.priority > playerCmd.priority) {
 						const dmg = enemyCmd.damage;
 						damageToPlayer = dmg;
-						log = `${prefix}双方以攻对攻，对手优先级更高，你受到${dmg}伤害！`;
+						log = `${playerEmoji} 对攻 ${enemyEmoji} → -${dmg}HP (后手)`;
 					} else {
 						const dmgP = Math.floor(playerCmd.damage * tradeMultiplier);
 						const dmgE = Math.floor(enemyCmd.damage * tradeMultiplier);
 						damageToPlayer = dmgE;
 						damageToEnemy = dmgP;
-						log = `${prefix}双方以攻对攻同时命中，你受到${dmgE}伤害，对手受到${dmgP}伤害。`;
+						log = `${playerEmoji} 对攻 ${enemyEmoji} → 互相 -${dmgE}/${dmgP}HP`;
 					}
 					return { damageToPlayer, damageToEnemy, log };
 				}
 				if (playerCat === 'block' && enemyCat === 'block') {
-					log = `${prefix}双方对峙观望，均选择防守。`;
+					log = `${playerEmoji} 对峙 ${enemyEmoji}`;
 					return { damageToPlayer, damageToEnemy, log };
 				}
 				if (playerCat === 'throw' && enemyCat === 'throw') {
@@ -378,15 +392,15 @@ class CombatService {
 					const dmgE = Math.floor(enemyCmd.damage * tradeMultiplier);
 					damageToPlayer = dmgE;
 					damageToEnemy = dmgP;
-					log = `${prefix}双方同时尝试投技，互相受创：你${dmgE}，对手${dmgP}。`;
+					log = `${playerEmoji} 互投 ${enemyEmoji} → 互相 -${dmgE}/${dmgP}HP`;
 					return { damageToPlayer, damageToEnemy, log };
 				}
-				log = `${prefix}双方行动相互抵消。`;
+				log = `${playerEmoji} 抵消 ${enemyEmoji}`;
 				return { damageToPlayer, damageToEnemy, log };
 			}
 		}
 
-		log = `${prefix}本回合未能分出胜负。`;
+		log = `❓ 回合结束`;
 		return { damageToPlayer, damageToEnemy, log };
 	}
 
