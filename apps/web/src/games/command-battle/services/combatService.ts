@@ -118,58 +118,71 @@ class CombatService {
 				effects: ['stagger_on_block'],
 				keyboardShortcut: 'K'
 			},
-			{
-				id: 'jump',
-				name: '跳跃',
-				type: 'jump',
-				description: '跳跃攻击，可闪避下段攻击',
-				damage: 18,
-				meterCost: 0,
-				meterGain: 8,
-				effectiveDistance: ['near', 'mid'],
-				priority: 3,
-				canInterrupt: true,
-				keyboardShortcut: 'W'
-			},
-			{
-				id: 'crouch',
-				name: '下蹲',
-				type: 'crouch',
-				description: '下蹲防御，可闪避上段攻击',
-				damage: 0,
-				meterCost: 0,
-				meterGain: 5,
-				effectiveDistance: ['near', 'mid', 'far'],
-				priority: 2,
-				canInterrupt: false,
-				keyboardShortcut: 'S'
-			},
-			{
-				id: 'left_move',
-				name: '左移',
-				type: 'left_move',
-				description: '向左移动',
-				damage: 0,
-				meterCost: 0,
-				meterGain: 0,
-				effectiveDistance: ['near', 'mid', 'far'],
-				priority: 1,
-				canInterrupt: false,
-				keyboardShortcut: 'A'
-			},
-			{
-				id: 'right_move',
-				name: '右移',
-				type: 'right_move',
-				description: '向右移动',
-				damage: 0,
-				meterCost: 0,
-				meterGain: 0,
-				effectiveDistance: ['near', 'mid', 'far'],
-				priority: 1,
-				canInterrupt: false,
-				keyboardShortcut: 'D'
-			},
+		{
+			id: 'block',
+			name: '格挡',
+			type: 'block',
+			description: '格挡防御，减少受到的伤害',
+			damage: 0,
+			meterCost: 0,
+			meterGain: 5,
+			effectiveDistance: ['near', 'mid', 'far'],
+			priority: 2,
+			canInterrupt: false,
+			keyboardShortcut: 'S'
+		},
+		{
+			id: 'jump',
+			name: '跳跃',
+			type: 'jump',
+			description: '跳跃闪避，可躲避投技和下段攻击',
+			damage: 0,
+			meterCost: 0,
+			meterGain: 3,
+			effectiveDistance: ['near', 'mid'],
+			priority: 3,
+			canInterrupt: true,
+			keyboardShortcut: 'W'
+		},
+		{
+			id: 'crouch',
+			name: '下蹲',
+			type: 'crouch',
+			description: '下蹲防御，可躲避投技和上段攻击',
+			damage: 0,
+			meterCost: 0,
+			meterGain: 3,
+			effectiveDistance: ['near', 'mid', 'far'],
+			priority: 2,
+			canInterrupt: false,
+			keyboardShortcut: 'Q'
+		},
+		{
+			id: 'advance',
+			name: '前进',
+			type: 'advance',
+			description: '向对手靠近',
+			damage: 0,
+			meterCost: 0,
+			meterGain: 0,
+			effectiveDistance: ['near', 'mid', 'far'],
+			priority: 1,
+			canInterrupt: false,
+			keyboardShortcut: 'D'
+		},
+		{
+			id: 'retreat',
+			name: '后撤',
+			type: 'retreat',
+			description: '远离对手',
+			damage: 0,
+			meterCost: 0,
+			meterGain: 0,
+			effectiveDistance: ['near', 'mid', 'far'],
+			priority: 1,
+			canInterrupt: false,
+			keyboardShortcut: 'A'
+		},
 			{
 				id: 'swallow_return',
 				name: '特殊攻击',
@@ -240,54 +253,66 @@ class CombatService {
 				canInterrupt: false,
 				effects: ['stagger_on_block']
 			},
-			{
-				id: 'enemy_jump',
-				name: '跳跃',
-				type: 'jump',
-				description: '跳跃攻击',
-				damage: 16,
-				meterCost: 0,
-				meterGain: 6,
-				effectiveDistance: ['near', 'mid'],
-				priority: 3,
-				canInterrupt: true
-			},
-			{
-				id: 'enemy_crouch',
-				name: '下蹲',
-				type: 'crouch',
-				description: '下蹲防御',
-				damage: 0,
-				meterCost: 0,
-				meterGain: 4,
-				effectiveDistance: ['near', 'mid', 'far'],
-				priority: 2,
-				canInterrupt: false
-			},
-			{
-				id: 'enemy_left_move',
-				name: '左移',
-				type: 'left_move',
-				description: '向左移动',
-				damage: 0,
-				meterCost: 0,
-				meterGain: 0,
-				effectiveDistance: ['near', 'mid', 'far'],
-				priority: 1,
-				canInterrupt: false
-			},
-			{
-				id: 'enemy_right_move',
-				name: '右移',
-				type: 'right_move',
-				description: '向右移动',
-				damage: 0,
-				meterCost: 0,
-				meterGain: 0,
-				effectiveDistance: ['near', 'mid', 'far'],
-				priority: 1,
-				canInterrupt: false
-			}
+		{
+			id: 'enemy_block',
+			name: '格挡',
+			type: 'block',
+			description: '格挡防御',
+			damage: 0,
+			meterCost: 0,
+			meterGain: 4,
+			effectiveDistance: ['near', 'mid', 'far'],
+			priority: 2,
+			canInterrupt: false
+		},
+		{
+			id: 'enemy_jump',
+			name: '跳跃',
+			type: 'jump',
+			description: '跳跃闪避',
+			damage: 0,
+			meterCost: 0,
+			meterGain: 3,
+			effectiveDistance: ['near', 'mid'],
+			priority: 3,
+			canInterrupt: true
+		},
+		{
+			id: 'enemy_crouch',
+			name: '下蹲',
+			type: 'crouch',
+			description: '下蹲防御',
+			damage: 0,
+			meterCost: 0,
+			meterGain: 3,
+			effectiveDistance: ['near', 'mid', 'far'],
+			priority: 2,
+			canInterrupt: false
+		},
+		{
+			id: 'enemy_advance',
+			name: '前进',
+			type: 'advance',
+			description: '向前靠近',
+			damage: 0,
+			meterCost: 0,
+			meterGain: 0,
+			effectiveDistance: ['near', 'mid', 'far'],
+			priority: 1,
+			canInterrupt: false
+		},
+		{
+			id: 'enemy_retreat',
+			name: '后撤',
+			type: 'retreat',
+			description: '向后撤离',
+			damage: 0,
+			meterCost: 0,
+			meterGain: 0,
+			effectiveDistance: ['near', 'mid', 'far'],
+			priority: 1,
+			canInterrupt: false
+		}
 		];
 	}
 
@@ -306,13 +331,17 @@ class CombatService {
 		newState.player.currentHp = Math.max(0, newState.player.currentHp - damageToPlayer);
 		newState.enemy.currentHp = Math.max(0, newState.enemy.currentHp - damageToEnemy);
 
-		newState.player.currentMeter = Math.min(100, newState.player.currentMeter + playerCmd.meterGain);
-		newState.enemy.currentMeter = Math.min(100, newState.enemy.currentMeter + enemyCmd.meterGain);
+		const playerMeterFromAction = playerCmd.meterGain;
+		const enemyMeterFromAction = enemyCmd.meterGain;
+		const playerMeterFromDamage = Math.floor(damageToPlayer * 0.5);
+		const enemyMeterFromDamage = Math.floor(damageToEnemy * 0.5);
 
+		newState.player.currentMeter = Math.min(100, newState.player.currentMeter + playerMeterFromAction + playerMeterFromDamage);
+		newState.enemy.currentMeter = Math.min(100, newState.enemy.currentMeter + enemyMeterFromAction + enemyMeterFromDamage);
 
 		newState.combatLog.push(log);
 
-		newState.distance = this.updateDistance(newState.distance, playerCmd, enemyCmd);
+		newState.distance = this.updateDistance(newState.distance, playerCmd, enemyCmd, damageToPlayer, damageToEnemy);
 
 		if (newState.player.currentHp <= 0) {
 			newState.gameStatus = 'defeat';
@@ -347,24 +376,19 @@ class CombatService {
 	private rps(left: string, right: string): 'left' | 'right' | 'neutral' {
 		if (left === right) return 'neutral';
 		
-		// 跳跃克制下蹲攻击
-		if (left === 'jump' && right === 'crouch') return 'left';
-		if (left === 'crouch' && right === 'jump') return 'right';
+		if (left === 'throw' && (right === 'jump' || right === 'crouch')) return 'right';
+		if (right === 'throw' && (left === 'jump' || left === 'crouch')) return 'left';
 		
-		// 传统RPS
 		if (left === 'attack' && right === 'throw') return 'left';
+		if (left === 'throw' && right === 'attack') return 'right';
+		
 		if (left === 'throw' && right === 'block') return 'left';
+		if (left === 'block' && right === 'throw') return 'right';
+		
 		if (left === 'block' && right === 'attack') return 'left';
+		if (left === 'attack' && right === 'block') return 'right';
 		
-		// 跳跃攻击克制下段攻击
-		if (left === 'jump' && (right === 'light_attack' || right === 'heavy_attack')) return 'left';
-		if (right === 'jump' && (left === 'light_attack' || left === 'heavy_attack')) return 'right';
-		
-		// 下蹲克制上段攻击
-		if (left === 'crouch' && (right === 'light_attack' || right === 'heavy_attack')) return 'left';
-		if (right === 'crouch' && (left === 'light_attack' || left === 'heavy_attack')) return 'right';
-		
-		return 'right';
+		return 'neutral';
 	}
 
 	private getCommandEmoji(type: Command['type']): string {
@@ -375,8 +399,8 @@ class CombatService {
 			case 'block': return '🛡️';
 			case 'jump': return '⬆️';
 			case 'crouch': return '⬇️';
-			case 'left_move': return '⬅️';
-			case 'right_move': return '➡️';
+			case 'advance': return '➡️';
+			case 'retreat': return '⬅️';
 			case 'special': return '✨';
 			default: return '⚔️';
 		}
@@ -389,7 +413,7 @@ class CombatService {
 		const playerCat = this.getCategory(playerCmd.type);
 		const enemyCat = this.getCategory(enemyCmd.type);
 
-		const advantageMultiplier = 1.2;
+		const advantageMultiplier = 1.3;
 		const tradeMultiplier = 0.7;
 		const blockReduction = 0.3;
 
@@ -425,95 +449,122 @@ class CombatService {
 		}
 
 		if (playerCat === 'move' && enemyCat === 'move') {
-			log = `🚶 双方调整位置`;
+			log = `🚶 双方调整距离`;
 			return { damageToPlayer, damageToEnemy, log };
 		}
 
-		if (playerCat === 'move' && enemyCat !== 'move') {
-			if (enemyCat === 'attack' || enemyCat === 'throw') {
+		if (playerCat === 'move') {
+			if (enemyCat === 'attack') {
 				damageToPlayer = enemyCmd.damage;
-				log = `🚶 ${enemyEmoji} 命中! → -${damageToPlayer}HP`;
+				log = `🚶 移动中被 ${enemyEmoji} 命中! → -${damageToPlayer}HP`;
+			} else if (enemyCat === 'throw') {
+				damageToPlayer = enemyCmd.damage;
+				log = `🚶 移动中被投技! → -${damageToPlayer}HP`;
 			} else {
-				log = `🚶 ${enemyEmoji} 防御`;
+				log = `🚶 ${enemyEmoji} 防御姿态`;
 			}
 			return { damageToPlayer, damageToEnemy, log };
 		}
 
-		if (enemyCat === 'move' && playerCat !== 'move') {
-			if (playerCat === 'attack' || playerCat === 'throw') {
+		if (enemyCat === 'move') {
+			if (playerCat === 'attack') {
 				damageToEnemy = playerCmd.damage;
-				log = `${playerEmoji} 命中! 🚶 → -${damageToEnemy}HP`;
+				log = `${playerEmoji} 命中移动中的对手! → -${damageToEnemy}HP`;
+			} else if (playerCat === 'throw') {
+				damageToEnemy = playerCmd.damage;
+				log = `投技命中移动中的对手! → -${damageToEnemy}HP`;
 			} else {
-				log = `${playerEmoji} 防御 🚶`;
+				log = `${playerEmoji} 防御姿态 🚶`;
 			}
 			return { damageToPlayer, damageToEnemy, log };
 		}
 
-		if (playerCat !== 'move' && enemyCat !== 'move') {
-			const rpsResult = this.rps('' + playerCat as 'attack' | 'throw' | 'block', '' + enemyCat as 'attack' | 'throw' | 'block');
+		if (playerCat === 'jump' || playerCat === 'crouch' || enemyCat === 'jump' || enemyCat === 'crouch') {
+			const rpsResult = this.rps(playerCat, enemyCat);
 			if (rpsResult === 'left') {
-				if (enemyCat === 'block' && playerCat === 'attack') {
-					const dmg = Math.floor(playerCmd.damage * blockReduction);
-					damageToEnemy = dmg;
-					log = `${playerEmoji} 克制 ${enemyEmoji} → -${dmg}HP (格挡)`;
+				if (enemyCat === 'throw') {
+					log = `${playerEmoji} 躲避投技成功!`;
+				} else if (enemyCat === 'attack') {
+					damageToPlayer = Math.floor(enemyCmd.damage * 0.5);
+					log = `${playerEmoji} 闪避姿态，${enemyEmoji} 擦伤 → -${damageToPlayer}HP`;
 				} else {
-					const dmg = Math.floor(playerCmd.damage * advantageMultiplier);
-					damageToEnemy = dmg;
-					log = `${playerEmoji} 克制 ${enemyEmoji} → -${dmg}HP`;
+					log = `${playerEmoji} ${enemyEmoji}`;
 				}
-				return { damageToPlayer, damageToEnemy, log };
 			} else if (rpsResult === 'right') {
-				if (playerCat === 'block' && enemyCat === 'attack') {
-					const dmg = Math.floor(enemyCmd.damage * blockReduction);
-					damageToPlayer = dmg;
-					log = `${playerEmoji} 被克 ${enemyEmoji} → -${dmg}HP (格挡)`;
+				if (playerCat === 'throw') {
+					log = `${playerEmoji} 投技被躲避!`;
+				} else if (playerCat === 'attack') {
+					damageToEnemy = Math.floor(playerCmd.damage * 0.5);
+					log = `${enemyEmoji} 闪避姿态，${playerEmoji} 擦伤 → -${damageToEnemy}HP`;
 				} else {
-					const dmg = Math.floor(enemyCmd.damage * advantageMultiplier);
-					damageToPlayer = dmg;
-					log = `${playerEmoji} 被克 ${enemyEmoji} → -${dmg}HP`;
+					log = `${playerEmoji} ${enemyEmoji}`;
 				}
-				return { damageToPlayer, damageToEnemy, log };
 			} else {
-				if (playerCat === 'attack' && enemyCat === 'attack') {
-					if (playerCmd.priority > enemyCmd.priority) {
-						const dmg = playerCmd.damage;
-						damageToEnemy = dmg;
-						log = `${playerEmoji} 对攻 ${enemyEmoji} → -${dmg}HP (先手)`;
-					} else if (enemyCmd.priority > playerCmd.priority) {
-						const dmg = enemyCmd.damage;
-						damageToPlayer = dmg;
-						log = `${playerEmoji} 对攻 ${enemyEmoji} → -${dmg}HP (后手)`;
-					} else {
-						const dmgP = Math.floor(playerCmd.damage * tradeMultiplier);
-						const dmgE = Math.floor(enemyCmd.damage * tradeMultiplier);
-						damageToPlayer = dmgE;
-						damageToEnemy = dmgP;
-						log = `${playerEmoji} 对攻 ${enemyEmoji} → 互相 -${dmgE}/${dmgP}HP`;
-					}
-					return { damageToPlayer, damageToEnemy, log };
-				}
-				if (playerCat === 'block' && enemyCat === 'block') {
-					log = `${playerEmoji} 对峙 ${enemyEmoji}`;
-					return { damageToPlayer, damageToEnemy, log };
-				}
-				if (playerCat === 'throw' && enemyCat === 'throw') {
-					const dmgP = Math.floor(playerCmd.damage * tradeMultiplier);
-					const dmgE = Math.floor(enemyCmd.damage * tradeMultiplier);
-					damageToPlayer = dmgE;
-					damageToEnemy = dmgP;
-					log = `${playerEmoji} 互投 ${enemyEmoji} → 互相 -${dmgE}/${dmgP}HP`;
-					return { damageToPlayer, damageToEnemy, log };
-				}
-				log = `${playerEmoji} 抵消 ${enemyEmoji}`;
-				return { damageToPlayer, damageToEnemy, log };
+				log = `${playerEmoji} 对峙 ${enemyEmoji}`;
 			}
+			return { damageToPlayer, damageToEnemy, log };
 		}
 
-		log = `❓ 回合结束`;
-		return { damageToPlayer, damageToEnemy, log };
+		const rpsResult = this.rps(playerCat, enemyCat);
+		if (rpsResult === 'left') {
+			if (enemyCat === 'block' && playerCat === 'attack') {
+				const dmg = Math.floor(playerCmd.damage * blockReduction);
+				damageToEnemy = dmg;
+				log = `${playerEmoji} 被格挡 → -${dmg}HP`;
+			} else if (playerCat === 'throw' && enemyCat === 'block') {
+				damageToEnemy = Math.floor(playerCmd.damage * advantageMultiplier);
+				log = `${playerEmoji} 破防! → -${damageToEnemy}HP`;
+			} else if (playerCat === 'attack' && enemyCat === 'throw') {
+				damageToEnemy = Math.floor(playerCmd.damage * advantageMultiplier);
+				log = `${playerEmoji} 打断投技! → -${damageToEnemy}HP`;
+			} else {
+				damageToEnemy = Math.floor(playerCmd.damage * advantageMultiplier);
+				log = `${playerEmoji} 克制 ${enemyEmoji} → -${damageToEnemy}HP`;
+			}
+			return { damageToPlayer, damageToEnemy, log };
+		} else if (rpsResult === 'right') {
+			if (playerCat === 'block' && enemyCat === 'attack') {
+				const dmg = Math.floor(enemyCmd.damage * blockReduction);
+				damageToPlayer = dmg;
+				log = `${enemyEmoji} 被格挡 → -${dmg}HP`;
+			} else if (enemyCat === 'throw' && playerCat === 'block') {
+				damageToPlayer = Math.floor(enemyCmd.damage * advantageMultiplier);
+				log = `${enemyEmoji} 破防! → -${damageToPlayer}HP`;
+			} else if (enemyCat === 'attack' && playerCat === 'throw') {
+				damageToPlayer = Math.floor(enemyCmd.damage * advantageMultiplier);
+				log = `${enemyEmoji} 打断投技! → -${damageToPlayer}HP`;
+			} else {
+				damageToPlayer = Math.floor(enemyCmd.damage * advantageMultiplier);
+				log = `${playerEmoji} 被克 ${enemyEmoji} → -${damageToPlayer}HP`;
+			}
+			return { damageToPlayer, damageToEnemy, log };
+		} else {
+			if (playerCat === 'attack' && enemyCat === 'attack') {
+				if (playerCmd.priority > enemyCmd.priority) {
+					damageToEnemy = playerCmd.damage;
+					log = `${playerEmoji} 先手! → -${damageToEnemy}HP`;
+				} else if (enemyCmd.priority > playerCmd.priority) {
+					damageToPlayer = enemyCmd.damage;
+					log = `${enemyEmoji} 先手! → -${damageToPlayer}HP`;
+				} else {
+					damageToPlayer = Math.floor(enemyCmd.damage * tradeMultiplier);
+					damageToEnemy = Math.floor(playerCmd.damage * tradeMultiplier);
+					log = `${playerEmoji} 对攻 ${enemyEmoji} → 互相 -${damageToPlayer}/-${damageToEnemy}HP`;
+				}
+			} else if (playerCat === 'block' && enemyCat === 'block') {
+				log = `${playerEmoji} 对峙 ${enemyEmoji}`;
+			} else if (playerCat === 'throw' && enemyCat === 'throw') {
+				damageToPlayer = Math.floor(enemyCmd.damage * tradeMultiplier);
+				damageToEnemy = Math.floor(playerCmd.damage * tradeMultiplier);
+				log = `${playerEmoji} 互投 ${enemyEmoji} → 互相 -${damageToPlayer}/-${damageToEnemy}HP`;
+			} else {
+				log = `${playerEmoji} 抵消 ${enemyEmoji}`;
+			}
+			return { damageToPlayer, damageToEnemy, log };
+		}
 	}
 
-	private updateDistance(currentDistance: Distance, playerCmd: Command, enemyCmd: Command): Distance {
+	private updateDistance(currentDistance: Distance, playerCmd: Command, enemyCmd: Command, damageToPlayer: number, damageToEnemy: number): Distance {
 		let newDistance = currentDistance;
 
 		const playerWantsAdvance = playerCmd.type === 'advance';
@@ -533,6 +584,26 @@ class CombatService {
 		} else if (enemyWantsRetreat && !playerWantsAdvance) {
 			if (currentDistance === 'near') newDistance = 'mid';
 			else if (currentDistance === 'mid') newDistance = 'far';
+		}
+
+		if (damageToEnemy > 0 && playerCmd.type === 'heavy_attack' && damageToEnemy >= 20) {
+			if (newDistance === 'near') newDistance = 'mid';
+			else if (newDistance === 'mid') newDistance = 'far';
+		}
+
+		if (damageToPlayer > 0 && enemyCmd.type === 'heavy_attack' && damageToPlayer >= 20) {
+			if (newDistance === 'near') newDistance = 'mid';
+			else if (newDistance === 'mid') newDistance = 'far';
+		}
+
+		if (damageToEnemy > 0 && playerCmd.type === 'throw') {
+			if (newDistance === 'mid') newDistance = 'near';
+			else if (newDistance === 'far') newDistance = 'mid';
+		}
+
+		if (damageToPlayer > 0 && enemyCmd.type === 'throw') {
+			if (newDistance === 'mid') newDistance = 'near';
+			else if (newDistance === 'far') newDistance = 'mid';
 		}
 
 		return newDistance;

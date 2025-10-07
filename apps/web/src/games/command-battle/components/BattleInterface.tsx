@@ -136,128 +136,139 @@ export function BattleInterface({ state, onCommandSelect, onGameStart, onRestart
 	};
 
 	return (
-		<div className="w-full h-full bg-[#1a1a2e] text-white p-4 flex flex-col">
-			{/* 状态栏 */}
-			<div className="bg-[#16213e] p-4 rounded-lg mb-4">
-				<div className="flex justify-between items-center mb-2">
-					<div className="flex items-center space-x-4">
-						<span className="font-semibold">[{state.player.name}]</span>
-						<span>HP: {getHpBar(state.player.currentHp, state.player.maxHp)}</span>
-						<span>气: {getMeterBar(state.player.currentMeter, state.player.maxMeter)}</span>
+		<div className="w-full h-full bg-[#1a1a2e] text-white flex flex-col">
+			{/* 顶部状态栏 - 扁平化 */}
+			<div className="bg-[#16213e] px-4 py-2 border-b border-gray-600">
+				<div className="flex justify-between items-center">
+					{/* 玩家状态 */}
+					<div className="flex items-center space-x-6">
+						<div className="flex items-center space-x-2">
+							<span className="font-bold text-blue-300">[{state.player.name}]</span>
+							<span className="text-red-300">HP: {getHpBar(state.player.currentHp, state.player.maxHp)}</span>
+							<span className="text-yellow-300">气: {getMeterBar(state.player.currentMeter, state.player.maxMeter)}</span>
+						</div>
 					</div>
-					<div className="flex items-center space-x-4">
-						<span className="font-semibold">[{state.enemy.name}]</span>
-						<span>HP: {getHpBar(state.enemy.currentHp, state.enemy.maxHp)}</span>
-						<span>气: {getMeterBar(state.enemy.currentMeter, state.enemy.maxMeter)}</span>
+					
+					{/* 中央信息 */}
+					<div className="flex items-center space-x-4 text-sm">
+						<span className="text-gray-300">回合: {state.round}</span>
+						<span className="text-orange-300">时间: {state.timeRemaining}秒</span>
+						<span className="text-green-300">距离: {getDistanceText(state.distance)}</span>
 					</div>
-				</div>
-				<div className="flex justify-between items-center text-sm text-gray-300">
-					<span>回合: {state.round}</span>
-					<span>决策剩余时间: {state.timeRemaining}秒</span>
-					<span>当前距离: [{getDistanceText(state.distance)}]</span>
+					
+					{/* 敌人状态 */}
+					<div className="flex items-center space-x-2">
+						<span className="text-yellow-300">气: {getMeterBar(state.enemy.currentMeter, state.enemy.maxMeter)}</span>
+						<span className="text-red-300">HP: {getHpBar(state.enemy.currentHp, state.enemy.maxHp)}</span>
+						<span className="font-bold text-red-300">[{state.enemy.name}]</span>
+					</div>
 				</div>
 			</div>
 
-			{/* 距离可视化 */}
-			<div className="bg-[#16213e] p-4 rounded-lg mb-4">
-				<div className="text-center mb-2">
-					<h3 className="font-semibold text-lg">[战场距离]</h3>
+			{/* 主内容区域 - 左右各一半 */}
+			<div className="flex-1 flex">
+				{/* 左侧：战斗日志 */}
+				<div className="w-1/2 bg-[#16213e] border-r border-gray-600 p-3 overflow-y-auto" ref={combatLogRef}>
+					<div className="text-sm font-semibold text-gray-300 mb-2">[战斗日志]</div>
+					<div className="space-y-1">
+						{state.combatLog.map((log, index) => {
+							const isImportant = log.includes('HP') || log.includes('胜利') || log.includes('败北');
+							const isDamage = log.includes('HP');
+							const isVictory = log.includes('胜利');
+							const isDefeat = log.includes('败北');
+							
+							return (
+								<div 
+									key={index} 
+									className={`text-xs ${
+										isImportant ? 'font-semibold' : ''
+									} ${
+										isDamage ? 'text-yellow-300' : ''
+									} ${
+										isVictory ? 'text-green-400' : ''
+									} ${
+										isDefeat ? 'text-red-400' : ''
+									}`}
+								>
+									{log}
+								</div>
+							);
+						})}
+					</div>
 				</div>
-				<div className="flex items-center justify-center">
-					{getDistanceVisualization(state.distance)}
-				</div>
-				<div className="text-center mt-2 text-sm text-gray-300">
-					{state.player.name} ← {getDistanceText(state.distance)} → {state.enemy.name}
-				</div>
-			</div>
 
-			{/* 战斗日志 */}
-			<div className="bg-[#16213e] p-4 rounded-lg mb-4 flex-1 overflow-y-auto" ref={combatLogRef}>
-				<h3 className="font-semibold mb-2">[战斗日志]</h3>
-				<div className="space-y-1">
-					{state.combatLog.map((log, index) => {
-						const isImportant = log.includes('HP') || log.includes('胜利') || log.includes('败北');
-						const isDamage = log.includes('HP');
-						const isVictory = log.includes('胜利');
-						const isDefeat = log.includes('败北');
-						
-						return (
-							<div 
-								key={index} 
-								className={`text-sm ${
-									isImportant ? 'font-semibold' : ''
-								} ${
-									isDamage ? 'text-yellow-300' : ''
-								} ${
-									isVictory ? 'text-green-400' : ''
-								} ${
-									isDefeat ? 'text-red-400' : ''
-								}`}
-							>
-								{log}
+				{/* 右侧：控制面板 */}
+				<div className="w-1/2 bg-[#16213e] flex flex-col">
+					{/* 距离可视化 */}
+					<div className="p-3 border-b border-gray-600">
+						<div className="text-sm font-semibold text-gray-300 mb-2">[战场距离]</div>
+						<div className="flex items-center justify-center mb-2">
+							{getDistanceVisualization(state.distance)}
+						</div>
+						<div className="text-xs text-center text-gray-400">
+							{state.player.name} ← {getDistanceText(state.distance)} → {state.enemy.name}
+						</div>
+					</div>
+
+					{/* 输入序列 */}
+					<div className="p-3 border-b border-gray-600">
+						<div className="text-sm font-semibold text-gray-300 mb-2">[搓招输入]</div>
+						<div className="text-center">
+							<div className="text-lg font-mono text-yellow-300 min-h-[1.5rem]">
+								{inputService.getSequenceDisplay() || '等待输入...'}
 							</div>
-						);
-					})}
-				</div>
-			</div>
-
-			{/* 输入序列显示 */}
-			<div className="bg-[#16213e] p-4 rounded-lg mb-4">
-				<h3 className="font-semibold mb-2">[搓招输入]</h3>
-				<div className="text-center">
-					<div className="text-2xl font-mono text-yellow-300 min-h-[2rem]">
-						{inputService.getSequenceDisplay() || '等待输入...'}
+							<div className="text-xs text-gray-400 mt-1">
+								动作: W Q S A D | 攻击: U I J K | 投技: U+I | 特殊: L
+							</div>
+						</div>
 					</div>
-					<div className="text-xs text-gray-400 mt-1">
-						移动: W(跳) S(蹲) A(左) D(右) | 攻击: U(轻拳) I(轻脚) J(重拳) K(重脚) | 投技: U+I | 特殊: L
-					</div>
-				</div>
-			</div>
 
-			{/* 指令面板 */}
-			<div className="bg-[#16213e] p-4 rounded-lg">
-				<h3 className="font-semibold mb-3">[你的指令面板]</h3>
-				<div className="grid grid-cols-3 gap-2">
-					{state.player.commands.map((command) => {
-						const isDisabled = command.meterCost > state.player.currentMeter || 
-							!command.effectiveDistance.includes(state.distance);
-						
-						return (
-							<button
-								key={command.id}
-								onClick={() => onCommandSelect(command)}
-								disabled={isDisabled}
-								className={`p-2 text-sm rounded border ${
-									isDisabled 
-										? 'bg-gray-600 text-gray-400 border-gray-500 cursor-not-allowed' 
-										: 'bg-blue-600 hover:bg-blue-700 text-white border-blue-500'
-								}`}
-								title={command.description}
-							>
-								<div className="flex items-center justify-center space-x-1">
-									<span className="text-lg">{getCommandEmoji(command.type)}</span>
-									<span>{command.name}</span>
-								</div>
-								<div className="flex justify-between items-center text-xs">
-									{command.meterCost > 0 && (
-										<span className="text-yellow-300">
-											气: {command.meterCost}
-										</span>
-									)}
-									{command.keyboardShortcut && (
-										<span className="text-gray-300 bg-gray-700 px-1 rounded">
-											{command.keyboardShortcut}
-										</span>
-									)}
-								</div>
-								{command.isCombo && (
-									<div className="text-xs text-green-300 mt-1">
-										连招技能
-									</div>
-								)}
-							</button>
-						);
-					})}
+					{/* 指令面板 - 可滑动 */}
+					<div className="flex-1 p-3 overflow-y-auto">
+						<div className="text-sm font-semibold text-gray-300 mb-2">[指令面板]</div>
+						<div className="grid grid-cols-2 gap-2">
+							{state.player.commands.map((command) => {
+								const isDisabled = command.meterCost > state.player.currentMeter || 
+									!command.effectiveDistance.includes(state.distance);
+								
+								return (
+									<button
+										key={command.id}
+										onClick={() => onCommandSelect(command)}
+										disabled={isDisabled}
+										className={`p-3 text-sm rounded border ${
+											isDisabled 
+												? 'bg-gray-600 text-gray-400 border-gray-500 cursor-not-allowed' 
+												: 'bg-blue-600 hover:bg-blue-700 text-white border-blue-500 active:bg-blue-800'
+										}`}
+										title={command.description}
+									>
+										<div className="flex items-center justify-center space-x-1">
+											<span className="text-base">{getCommandEmoji(command.type)}</span>
+											<span className="truncate">{command.name}</span>
+										</div>
+										<div className="flex justify-between items-center text-xs mt-1">
+											{command.meterCost > 0 && (
+												<span className="text-yellow-300">
+													气: {command.meterCost}
+												</span>
+											)}
+											{command.keyboardShortcut && (
+												<span className="text-gray-300 bg-gray-700 px-1 rounded text-xs">
+													{command.keyboardShortcut}
+												</span>
+											)}
+										</div>
+										{command.isCombo && (
+											<div className="text-xs text-green-300 mt-1 text-center">
+												连招
+											</div>
+										)}
+									</button>
+								);
+							})}
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>

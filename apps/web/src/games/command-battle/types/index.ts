@@ -1,5 +1,5 @@
 export type Distance = 'near' | 'mid' | 'far';
-export type CommandType = 'light_attack' | 'heavy_attack' | 'throw' | 'block' | 'advance' | 'retreat' | 'special' | 'jump' | 'crouch' | 'left_move' | 'right_move';
+export type CommandType = 'light_attack' | 'heavy_attack' | 'throw' | 'block' | 'advance' | 'retreat' | 'special' | 'jump' | 'crouch';
 
 export interface Command {
 	id: string;
