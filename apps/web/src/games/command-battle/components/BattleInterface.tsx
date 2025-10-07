@@ -217,6 +217,11 @@ export function BattleInterface({ state, onCommandSelect, onGameStart, onRestart
 							<div className="text-lg font-mono text-yellow-300 min-h-[1.5rem]">
 								{inputService.getSequenceDisplay() || '等待输入...'}
 							</div>
+							{inputService.getCurrentCommandDisplay() && (
+								<div className="text-sm text-green-300 mt-1">
+									当前指令: {inputService.getCurrentCommandDisplay()}
+								</div>
+							)}
 							<div className="text-xs text-gray-400 mt-1">
 								动作: W Q S A D | 攻击: U I J K | 投技: U+I | 特殊: L
 							</div>

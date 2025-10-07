@@ -131,6 +131,7 @@ class InputService {
 			}
 		}
 
+		console.log(`[InputService] 当前最终指令: ${this.inputState.lastValidCommand}`);
 		return null;
 	}
 
@@ -186,13 +187,34 @@ class InputService {
 			'left': '←',
 			'right': '→',
 			'neutral': '·',
-			'punch': '轻拳',
-			'kick': '轻脚',
+			'punch': '拳',
+			'kick': '脚',
 			'block': '格挡',
 			'special': '特殊'
 		};
 
 		return sequence.map(input => displayMap[input]).join(' ');
+	}
+
+	public getCurrentCommandDisplay(): string {
+		const finalCommand = this.getFinalCommand();
+		if (!finalCommand) return '';
+
+		const commandDisplayMap: Record<string, string> = {
+			'light_slash': '轻拳',
+			'heavy_slash': '重拳',
+			'light_kick': '轻脚',
+			'heavy_kick': '重脚',
+			'block': '格挡',
+			'jump': '跳跃',
+			'crouch': '下蹲',
+			'advance': '前进',
+			'retreat': '后撤',
+			'sheath_strike': '投技',
+			'swallow_return': '特殊攻击'
+		};
+
+		return commandDisplayMap[finalCommand] || finalCommand;
 	}
 
 	public clearSequence(): void {
@@ -231,6 +253,7 @@ class InputService {
 	public endDecisionPhase(): string | null {
 		const finalCommand = this.getFinalCommand();
 		console.log(`[InputService] 决策阶段结束，最终指令: ${finalCommand || '无'}`);
+		console.log(`[InputService] 当前输入序列: ${this.getSequenceDisplay()}`);
 		this.clearSequence();
 		return finalCommand;
 	}
