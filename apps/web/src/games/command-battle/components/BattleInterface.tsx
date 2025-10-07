@@ -154,6 +154,7 @@ export function BattleInterface({ state, onCommandSelect, onGameStart, onRestart
 						<span className="text-gray-300">回合: {state.round}</span>
 						<span className="text-orange-300">时间: {state.timeRemaining}秒</span>
 						<span className="text-green-300">距离: {getDistanceText(state.distance)}</span>
+						<span className="text-purple-300">试炼: {state.currentEnemyIndex + 1}/3</span>
 					</div>
 					
 					{/* 敌人状态 */}

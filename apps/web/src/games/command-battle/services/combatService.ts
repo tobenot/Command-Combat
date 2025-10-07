@@ -39,7 +39,7 @@ class CombatService {
 			phase: 'decision',
 			timeRemaining: this.config.decisionTime,
 			isPlayerTurn: true,
-			combatLog: ['⚔️ 战斗开始'],
+			combatLog: ['⚔️ 战斗开始 - 第一场：莽夫'],
 			gameStatus: 'playing',
 			currentEnemyIndex: 0
 		};
@@ -347,8 +347,17 @@ class CombatService {
 			newState.gameStatus = 'defeat';
 			newState.combatLog.push('💀 败北');
 		} else if (newState.enemy.currentHp <= 0) {
-			newState.gameStatus = 'victory';
-			newState.combatLog.push('🏆 胜利');
+			// 检查是否还有下一个敌人
+			if (newState.currentEnemyIndex < 2) {
+				// 切换到下一个敌人
+				newState.currentEnemyIndex++;
+				newState.combatLog.push(`🏆 击败了敌人！准备迎战下一个对手...`);
+				this.switchToNextEnemy(newState);
+			} else {
+				// 所有敌人都被击败，完全胜利
+				newState.gameStatus = 'victory';
+				newState.combatLog.push('🏆 完全胜利！你完成了所有试炼！');
+			}
 		}
 
 		newState.round++;
@@ -609,6 +618,24 @@ class CombatService {
 		}
 
 		return newDistance;
+	}
+
+	private switchToNextEnemy(state: BattleState): void {
+		const enemyNames = ['莽夫', '铁壁', '宿敌'];
+		const enemyHp = [100, 120, 150]; // 每个敌人血量递增
+		
+		state.enemy.name = enemyNames[state.currentEnemyIndex];
+		state.enemy.maxHp = enemyHp[state.currentEnemyIndex];
+		state.enemy.currentHp = enemyHp[state.currentEnemyIndex];
+		state.enemy.currentMeter = 0;
+		state.distance = 'mid';
+		state.round = 1; // 重置回合数
+		
+		// 恢复玩家状态
+		state.player.currentHp = Math.min(state.player.maxHp, state.player.currentHp + 20); // 每场战斗后恢复20HP
+		state.player.currentMeter = Math.min(state.player.maxMeter, state.player.currentMeter + 30); // 恢复30气力
+		
+		state.combatLog.push(`⚔️ 第二场：${state.enemy.name} (HP: ${state.enemy.maxHp})`);
 	}
 
 	public getDistanceText(distance: Distance): string {
