@@ -49,7 +49,7 @@ class CombatService {
 		return [
 			{
 				id: 'light_slash',
-				name: '轻斩',
+				name: '轻拳',
 				type: 'light_attack',
 				description: '快速的斩击，优先级高，伤害低',
 				damage: 15,
@@ -57,11 +57,12 @@ class CombatService {
 				meterGain: 10,
 				effectiveDistance: ['near', 'mid'],
 				priority: 3,
-				canInterrupt: true
+				canInterrupt: true,
+				keyboardShortcut: 'U'
 			},
 			{
 				id: 'heavy_slash',
-				name: '重斩',
+				name: '重拳',
 				type: 'heavy_attack',
 				description: '势大力沉的劈砍，伤害高，但被防御后会陷入失衡',
 				damage: 25,
@@ -70,11 +71,14 @@ class CombatService {
 				effectiveDistance: ['near', 'mid'],
 				priority: 2,
 				canInterrupt: false,
-				effects: ['stagger_on_block']
+				effects: ['stagger_on_block'],
+				keyboardShortcut: 'J',
+				inputSequence: 'combo_002',
+				isCombo: true
 			},
 			{
 				id: 'sheath_strike',
-				name: '剑鞘打击',
+				name: '投技',
 				type: 'throw',
 				description: '一次投技，消耗少量体力，可以破解对手的防御',
 				damage: 20,
@@ -82,47 +86,93 @@ class CombatService {
 				meterGain: 5,
 				effectiveDistance: ['near'],
 				priority: 1,
-				canInterrupt: false
+				canInterrupt: false,
+				keyboardShortcut: 'U+I',
+				inputSequence: 'throw_combo',
+				isCombo: true
 			},
 			{
-				id: 'block',
-				name: '格挡',
-				type: 'block',
-				description: '防御姿态，大幅减伤',
+				id: 'light_kick',
+				name: '轻脚',
+				type: 'light_attack',
+				description: '快速的踢击，优先级高，伤害低',
+				damage: 12,
+				meterCost: 0,
+				meterGain: 8,
+				effectiveDistance: ['near', 'mid'],
+				priority: 3,
+				canInterrupt: true,
+				keyboardShortcut: 'I'
+			},
+			{
+				id: 'heavy_kick',
+				name: '重脚',
+				type: 'heavy_attack',
+				description: '势大力沉的踢击，伤害高，但被防御后会陷入失衡',
+				damage: 22,
+				meterCost: 0,
+				meterGain: 12,
+				effectiveDistance: ['near', 'mid'],
+				priority: 2,
+				canInterrupt: false,
+				effects: ['stagger_on_block'],
+				keyboardShortcut: 'K'
+			},
+			{
+				id: 'jump',
+				name: '跳跃',
+				type: 'jump',
+				description: '跳跃攻击，可闪避下段攻击',
+				damage: 18,
+				meterCost: 0,
+				meterGain: 8,
+				effectiveDistance: ['near', 'mid'],
+				priority: 3,
+				canInterrupt: true,
+				keyboardShortcut: 'W'
+			},
+			{
+				id: 'crouch',
+				name: '下蹲',
+				type: 'crouch',
+				description: '下蹲防御，可闪避上段攻击',
 				damage: 0,
 				meterCost: 0,
 				meterGain: 5,
 				effectiveDistance: ['near', 'mid', 'far'],
 				priority: 2,
-				canInterrupt: false
+				canInterrupt: false,
+				keyboardShortcut: 'S'
 			},
 			{
-				id: 'advance',
-				name: '前冲',
-				type: 'advance',
-				description: '向前移动，缩短距离',
+				id: 'left_move',
+				name: '左移',
+				type: 'left_move',
+				description: '向左移动',
 				damage: 0,
 				meterCost: 0,
 				meterGain: 0,
-				effectiveDistance: ['mid', 'far'],
+				effectiveDistance: ['near', 'mid', 'far'],
 				priority: 1,
-				canInterrupt: false
+				canInterrupt: false,
+				keyboardShortcut: 'A'
 			},
 			{
-				id: 'retreat',
-				name: '后撤',
-				type: 'retreat',
-				description: '向后移动，拉开距离',
+				id: 'right_move',
+				name: '右移',
+				type: 'right_move',
+				description: '向右移动',
 				damage: 0,
 				meterCost: 0,
 				meterGain: 0,
-				effectiveDistance: ['near', 'mid'],
+				effectiveDistance: ['near', 'mid', 'far'],
 				priority: 1,
-				canInterrupt: false
+				canInterrupt: false,
+				keyboardShortcut: 'D'
 			},
 			{
 				id: 'swallow_return',
-				name: '燕返',
+				name: '特殊攻击',
 				type: 'special',
 				description: '一次极快、无法被普通攻击中断的突进斩击',
 				damage: 35,
@@ -130,7 +180,10 @@ class CombatService {
 				meterGain: 0,
 				effectiveDistance: ['mid'],
 				priority: 4,
-				canInterrupt: true
+				canInterrupt: true,
+				keyboardShortcut: 'L',
+				inputSequence: 'combo_001',
+				isCombo: true
 			}
 		];
 	}
@@ -163,38 +216,75 @@ class CombatService {
 				effects: ['stagger_on_block']
 			},
 			{
-				id: 'enemy_block',
-				name: '防御',
-				type: 'block',
-				description: '防御姿态',
+				id: 'enemy_light_kick',
+				name: '轻踢',
+				type: 'light_attack',
+				description: '快速的踢击',
+				damage: 10,
+				meterCost: 0,
+				meterGain: 6,
+				effectiveDistance: ['near', 'mid'],
+				priority: 3,
+				canInterrupt: true
+			},
+			{
+				id: 'enemy_heavy_kick',
+				name: '重踢',
+				type: 'heavy_attack',
+				description: '强力的踢击',
+				damage: 20,
+				meterCost: 0,
+				meterGain: 10,
+				effectiveDistance: ['near', 'mid'],
+				priority: 2,
+				canInterrupt: false,
+				effects: ['stagger_on_block']
+			},
+			{
+				id: 'enemy_jump',
+				name: '跳跃',
+				type: 'jump',
+				description: '跳跃攻击',
+				damage: 16,
+				meterCost: 0,
+				meterGain: 6,
+				effectiveDistance: ['near', 'mid'],
+				priority: 3,
+				canInterrupt: true
+			},
+			{
+				id: 'enemy_crouch',
+				name: '下蹲',
+				type: 'crouch',
+				description: '下蹲防御',
 				damage: 0,
 				meterCost: 0,
-				meterGain: 5,
+				meterGain: 4,
 				effectiveDistance: ['near', 'mid', 'far'],
 				priority: 2,
 				canInterrupt: false
 			},
 			{
-				id: 'enemy_advance',
-				name: '前进',
-				type: 'advance',
-				description: '向前移动',
+				id: 'enemy_left_move',
+				name: '左移',
+				type: 'left_move',
+				description: '向左移动',
 				damage: 0,
 				meterCost: 0,
 				meterGain: 0,
-				effectiveDistance: ['mid', 'far'],
+				effectiveDistance: ['near', 'mid', 'far'],
 				priority: 1,
 				canInterrupt: false
 			},
 			{
-				id: 'enemy_retreat',
-				name: '后退',
-				type: 'retreat',
-				description: '向后移动',
+				id: 'enemy_right_move',
+				name: '右移',
+				type: 'right_move',
+				description: '向右移动',
 				damage: 0,
 				meterCost: 0,
 				meterGain: 0,
-				effectiveDistance: ['near', 'mid'],
+				effectiveDistance: ['near', 'mid', 'far'],
 				priority: 1,
 				canInterrupt: false
 			}
@@ -245,18 +335,35 @@ class CombatService {
 		return command.effectiveDistance.includes(distance);
 	}
 
-	private getCategory(type: Command['type']): 'attack' | 'throw' | 'block' | 'move' {
+	private getCategory(type: Command['type']): 'attack' | 'throw' | 'block' | 'move' | 'jump' | 'crouch' {
 		if (type === 'light_attack' || type === 'heavy_attack' || type === 'special') return 'attack';
 		if (type === 'throw') return 'throw';
-		if (type === 'block') return 'block';
+		if (type === 'block' || type === 'retreat') return 'block';
+		if (type === 'jump') return 'jump';
+		if (type === 'crouch') return 'crouch';
 		return 'move';
 	}
 
-	private rps(left: 'attack' | 'throw' | 'block', right: 'attack' | 'throw' | 'block'): 'left' | 'right' | 'neutral' {
+	private rps(left: string, right: string): 'left' | 'right' | 'neutral' {
 		if (left === right) return 'neutral';
+		
+		// 跳跃克制下蹲攻击
+		if (left === 'jump' && right === 'crouch') return 'left';
+		if (left === 'crouch' && right === 'jump') return 'right';
+		
+		// 传统RPS
 		if (left === 'attack' && right === 'throw') return 'left';
 		if (left === 'throw' && right === 'block') return 'left';
 		if (left === 'block' && right === 'attack') return 'left';
+		
+		// 跳跃攻击克制下段攻击
+		if (left === 'jump' && (right === 'light_attack' || right === 'heavy_attack')) return 'left';
+		if (right === 'jump' && (left === 'light_attack' || left === 'heavy_attack')) return 'right';
+		
+		// 下蹲克制上段攻击
+		if (left === 'crouch' && (right === 'light_attack' || right === 'heavy_attack')) return 'left';
+		if (right === 'crouch' && (left === 'light_attack' || left === 'heavy_attack')) return 'right';
+		
 		return 'right';
 	}
 
@@ -266,8 +373,10 @@ class CombatService {
 			case 'heavy_attack': return '💥';
 			case 'throw': return '🤜';
 			case 'block': return '🛡️';
-			case 'advance': return '➡️';
-			case 'retreat': return '⬅️';
+			case 'jump': return '⬆️';
+			case 'crouch': return '⬇️';
+			case 'left_move': return '⬅️';
+			case 'right_move': return '➡️';
 			case 'special': return '✨';
 			default: return '⚔️';
 		}
@@ -407,16 +516,21 @@ class CombatService {
 	private updateDistance(currentDistance: Distance, playerCmd: Command, enemyCmd: Command): Distance {
 		let newDistance = currentDistance;
 
-		if (playerCmd.type === 'advance' && enemyCmd.type !== 'retreat') {
+		const playerWantsAdvance = playerCmd.type === 'advance';
+		const playerWantsRetreat = playerCmd.type === 'retreat';
+		const enemyWantsAdvance = enemyCmd.type === 'advance';
+		const enemyWantsRetreat = enemyCmd.type === 'retreat';
+
+		if (playerWantsAdvance && !enemyWantsRetreat) {
 			if (currentDistance === 'far') newDistance = 'mid';
 			else if (currentDistance === 'mid') newDistance = 'near';
-		} else if (playerCmd.type === 'retreat' && enemyCmd.type !== 'advance') {
+		} else if (playerWantsRetreat && !enemyWantsAdvance) {
 			if (currentDistance === 'near') newDistance = 'mid';
 			else if (currentDistance === 'mid') newDistance = 'far';
-		} else if (enemyCmd.type === 'advance' && playerCmd.type !== 'retreat') {
+		} else if (enemyWantsAdvance && !playerWantsRetreat) {
 			if (currentDistance === 'far') newDistance = 'mid';
 			else if (currentDistance === 'mid') newDistance = 'near';
-		} else if (enemyCmd.type === 'retreat' && playerCmd.type !== 'advance') {
+		} else if (enemyWantsRetreat && !playerWantsAdvance) {
 			if (currentDistance === 'near') newDistance = 'mid';
 			else if (currentDistance === 'mid') newDistance = 'far';
 		}

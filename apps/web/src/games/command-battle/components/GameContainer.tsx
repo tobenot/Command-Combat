@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { BattleState, Command } from '@/games/command-battle/types';
 import { combatService } from '@/games/command-battle/services/combatService';
 import { aiService } from '@/games/command-battle/services/aiService';
+import { inputService } from '@/games/command-battle/services/inputService';
 import { BattleInterface } from '@/games/command-battle/components/BattleInterface';
 
 export function GameContainer() {
@@ -39,6 +40,42 @@ export function GameContainer() {
 		}, 1000);
 	}, [battleState]);
 
+	const handleKeyDown = useCallback((event: KeyboardEvent) => {
+		if (!battleState || battleState.gameStatus !== 'playing' || battleState.phase !== 'decision') return;
+
+		inputService.handleKeyDown(event.code);
+
+		const comboCommand = inputService.processInput(event.code);
+		if (comboCommand) {
+			const command = battleState.player.commands.find(cmd => cmd.inputSequence === comboCommand);
+			if (command) {
+				const isDisabled = command.meterCost > battleState.player.currentMeter || 
+					!command.effectiveDistance.includes(battleState.distance);
+				
+				if (!isDisabled) {
+					handleCommandSelect(command);
+					return;
+				}
+			}
+		}
+
+		const key = event.key.toUpperCase();
+		const command = battleState.player.commands.find(cmd => cmd.keyboardShortcut === key);
+		
+		if (command) {
+			const isDisabled = command.meterCost > battleState.player.currentMeter || 
+				!command.effectiveDistance.includes(battleState.distance);
+			
+			if (!isDisabled) {
+				handleCommandSelect(command);
+			}
+		}
+	}, [battleState, handleCommandSelect]);
+
+	const handleKeyUp = useCallback((event: KeyboardEvent) => {
+		inputService.handleKeyUp(event.code);
+	}, []);
+
 	useEffect(() => {
 		if (!battleState || battleState.gameStatus !== 'playing') return;
 
@@ -61,6 +98,15 @@ export function GameContainer() {
 			handleCommandSelect(randomCommand);
 		}
 	}, [battleState, handleCommandSelect]);
+
+	useEffect(() => {
+		window.addEventListener('keydown', handleKeyDown);
+		window.addEventListener('keyup', handleKeyUp);
+		return () => {
+			window.removeEventListener('keydown', handleKeyDown);
+			window.removeEventListener('keyup', handleKeyUp);
+		};
+	}, [handleKeyDown, handleKeyUp]);
 
 	if (isLoading) {
 		return (

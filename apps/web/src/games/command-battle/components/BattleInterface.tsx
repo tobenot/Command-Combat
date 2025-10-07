@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { BattleState, Command } from '@/games/command-battle/types';
+import { inputService } from '@/games/command-battle/services/inputService';
 
 interface BattleInterfaceProps {
 	state: BattleState;
@@ -200,6 +201,19 @@ export function BattleInterface({ state, onCommandSelect, onGameStart, onRestart
 				</div>
 			</div>
 
+			{/* 输入序列显示 */}
+			<div className="bg-[#16213e] p-4 rounded-lg mb-4">
+				<h3 className="font-semibold mb-2">[搓招输入]</h3>
+				<div className="text-center">
+					<div className="text-2xl font-mono text-yellow-300 min-h-[2rem]">
+						{inputService.getSequenceDisplay() || '等待输入...'}
+					</div>
+					<div className="text-xs text-gray-400 mt-1">
+						移动: W(跳) S(蹲) A(左) D(右) | 攻击: U(轻拳) I(轻脚) J(重拳) K(重脚) | 投技: U+I | 特殊: L
+					</div>
+				</div>
+			</div>
+
 			{/* 指令面板 */}
 			<div className="bg-[#16213e] p-4 rounded-lg">
 				<h3 className="font-semibold mb-3">[你的指令面板]</h3>
@@ -224,9 +238,21 @@ export function BattleInterface({ state, onCommandSelect, onGameStart, onRestart
 									<span className="text-lg">{getCommandEmoji(command.type)}</span>
 									<span>{command.name}</span>
 								</div>
-								{command.meterCost > 0 && (
-									<div className="text-xs text-yellow-300">
-										气: {command.meterCost}
+								<div className="flex justify-between items-center text-xs">
+									{command.meterCost > 0 && (
+										<span className="text-yellow-300">
+											气: {command.meterCost}
+										</span>
+									)}
+									{command.keyboardShortcut && (
+										<span className="text-gray-300 bg-gray-700 px-1 rounded">
+											{command.keyboardShortcut}
+										</span>
+									)}
+								</div>
+								{command.isCombo && (
+									<div className="text-xs text-green-300 mt-1">
+										连招技能
 									</div>
 								)}
 							</button>

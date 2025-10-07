@@ -85,7 +85,6 @@ class AIService {
 			return state.enemy.commands[0];
 		}
 
-		const playerHpPercentage = state.player.currentHp / state.player.maxHp;
 		const enemyHpPercentage = state.enemy.currentHp / state.enemy.maxHp;
 
 		if (state.distance === 'far' || state.distance === 'mid') {

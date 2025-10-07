@@ -1,5 +1,5 @@
 export type Distance = 'near' | 'mid' | 'far';
-export type CommandType = 'light_attack' | 'heavy_attack' | 'throw' | 'block' | 'advance' | 'retreat' | 'special';
+export type CommandType = 'light_attack' | 'heavy_attack' | 'throw' | 'block' | 'advance' | 'retreat' | 'special' | 'jump' | 'crouch' | 'left_move' | 'right_move';
 
 export interface Command {
 	id: string;
@@ -13,6 +13,9 @@ export interface Command {
 	priority: number;
 	canInterrupt: boolean;
 	effects?: string[];
+	keyboardShortcut?: string;
+	inputSequence?: string;
+	isCombo?: boolean;
 }
 
 export interface Character {
