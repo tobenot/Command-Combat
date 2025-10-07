@@ -274,18 +274,19 @@ class CombatService {
 		let damageToPlayer = 0;
 		let damageToEnemy = 0;
 		let log = '';
+		const prefix = `你使用了[${playerCmd.name}]，对手使用了[${enemyCmd.name}]！`;
 
 		if (!playerEffective && !enemyEffective) {
-			log = '双方都没有有效的行动！';
+			log = `${prefix}双方都没有有效的行动！`;
 			return { damageToPlayer, damageToEnemy, log };
 		}
 
 		if (playerEffective && !enemyEffective) {
 			if (playerCat === 'attack' || playerCat === 'throw') {
 				damageToEnemy = playerCmd.damage;
-				log = `${playerName}使用了[${playerCmd.name}]，${enemyName}动作落空，造成${damageToEnemy}伤害！`;
+				log = `${prefix}${enemyName}动作落空，造成${damageToEnemy}伤害！`;
 			} else {
-				log = `${playerName}使用了[${playerCmd.name}]，${enemyName}动作落空！`;
+				log = `${prefix}${enemyName}动作落空！`;
 			}
 			return { damageToPlayer, damageToEnemy, log };
 		}
@@ -293,24 +294,24 @@ class CombatService {
 		if (!playerEffective && enemyEffective) {
 			if (enemyCat === 'attack' || enemyCat === 'throw') {
 				damageToPlayer = enemyCmd.damage;
-				log = `${enemyName}使用了[${enemyCmd.name}]，${playerName}动作落空，你受到${damageToPlayer}伤害！`;
+				log = `${prefix}${playerName}动作落空，你受到${damageToPlayer}伤害！`;
 			} else {
-				log = `${enemyName}使用了[${enemyCmd.name}]，${playerName}动作落空！`;
+				log = `${prefix}${playerName}动作落空！`;
 			}
 			return { damageToPlayer, damageToEnemy, log };
 		}
 
 		if (playerCat === 'move' && enemyCat === 'move') {
-			log = '双方调整脚步，暂未交锋。';
+			log = `${prefix}双方调整脚步，暂未交锋。`;
 			return { damageToPlayer, damageToEnemy, log };
 		}
 
 		if (playerCat === 'move' && enemyCat !== 'move') {
 			if (enemyCat === 'attack' || enemyCat === 'throw') {
 				damageToPlayer = enemyCmd.damage;
-				log = `${playerName}选择[${playerCmd.name}]移动，${enemyName}的[${enemyCmd.name}]命中，你受到${damageToPlayer}伤害！`;
+				log = `${prefix}${enemyName}命中，你受到${damageToPlayer}伤害！`;
 			} else {
-				log = `${playerName}选择[${playerCmd.name}]，${enemyName}的[${enemyCmd.name}]未造成伤害。`;
+				log = `${prefix}对手未造成伤害。`;
 			}
 			return { damageToPlayer, damageToEnemy, log };
 		}
@@ -318,9 +319,9 @@ class CombatService {
 		if (enemyCat === 'move' && playerCat !== 'move') {
 			if (playerCat === 'attack' || playerCat === 'throw') {
 				damageToEnemy = playerCmd.damage;
-				log = `${enemyName}选择[${enemyCmd.name}]移动，${playerName}的[${playerCmd.name}]命中，造成${damageToEnemy}伤害！`;
+				log = `${prefix}你的攻击命中，造成${damageToEnemy}伤害！`;
 			} else {
-				log = `${enemyName}选择[${enemyCmd.name}]，${playerName}的[${playerCmd.name}]未造成伤害。`;
+				log = `${prefix}你未造成伤害。`;
 			}
 			return { damageToPlayer, damageToEnemy, log };
 		}
@@ -331,22 +332,22 @@ class CombatService {
 				if (enemyCat === 'block' && playerCat === 'attack') {
 					const dmg = Math.floor(playerCmd.damage * blockReduction);
 					damageToEnemy = dmg;
-					log = `你以[${playerCmd.name}]克制对手的[${enemyCmd.name}]，被格挡削减，造成${dmg}伤害。`;
+					log = `${prefix}你的指令克制对手，被格挡削减，造成${dmg}伤害。`;
 				} else {
 					const dmg = Math.floor(playerCmd.damage * advantageMultiplier);
 					damageToEnemy = dmg;
-					log = `你以[${playerCmd.name}]克制对手的[${enemyCmd.name}]，造成${dmg}伤害！`;
+					log = `${prefix}你的指令克制对手，造成${dmg}伤害！`;
 				}
 				return { damageToPlayer, damageToEnemy, log };
 			} else if (rpsResult === 'right') {
 				if (playerCat === 'block' && enemyCat === 'attack') {
 					const dmg = Math.floor(enemyCmd.damage * blockReduction);
 					damageToPlayer = dmg;
-					log = `对手以[${enemyCmd.name}]克制你的[${playerCmd.name}]，被格挡削减，你受到${dmg}伤害。`;
+					log = `${prefix}对手克制你，被格挡削减，你受到${dmg}伤害。`;
 				} else {
 					const dmg = Math.floor(enemyCmd.damage * advantageMultiplier);
 					damageToPlayer = dmg;
-					log = `对手以[${enemyCmd.name}]克制你的[${playerCmd.name}]，你受到${dmg}伤害！`;
+					log = `${prefix}对手克制你，你受到${dmg}伤害！`;
 				}
 				return { damageToPlayer, damageToEnemy, log };
 			} else {
@@ -354,22 +355,22 @@ class CombatService {
 					if (playerCmd.priority > enemyCmd.priority) {
 						const dmg = playerCmd.damage;
 						damageToEnemy = dmg;
-						log = `双方以攻对攻，你的优先级更高，[${playerCmd.name}]命中造成${dmg}伤害！`;
+						log = `${prefix}双方以攻对攻，你的优先级更高，命中造成${dmg}伤害！`;
 					} else if (enemyCmd.priority > playerCmd.priority) {
 						const dmg = enemyCmd.damage;
 						damageToPlayer = dmg;
-						log = `双方以攻对攻，对手优先级更高，[${enemyCmd.name}]命中，你受到${dmg}伤害！`;
+						log = `${prefix}双方以攻对攻，对手优先级更高，你受到${dmg}伤害！`;
 					} else {
 						const dmgP = Math.floor(playerCmd.damage * tradeMultiplier);
 						const dmgE = Math.floor(enemyCmd.damage * tradeMultiplier);
 						damageToPlayer = dmgE;
 						damageToEnemy = dmgP;
-						log = `双方以攻对攻同时命中，你受到${dmgE}伤害，对手受到${dmgP}伤害。`;
+						log = `${prefix}双方以攻对攻同时命中，你受到${dmgE}伤害，对手受到${dmgP}伤害。`;
 					}
 					return { damageToPlayer, damageToEnemy, log };
 				}
 				if (playerCat === 'block' && enemyCat === 'block') {
-					log = '双方对峙观望，均选择防守。';
+					log = `${prefix}双方对峙观望，均选择防守。`;
 					return { damageToPlayer, damageToEnemy, log };
 				}
 				if (playerCat === 'throw' && enemyCat === 'throw') {
@@ -377,15 +378,15 @@ class CombatService {
 					const dmgE = Math.floor(enemyCmd.damage * tradeMultiplier);
 					damageToPlayer = dmgE;
 					damageToEnemy = dmgP;
-					log = `双方同时尝试投技，互相受创：你${dmgE}，对手${dmgP}。`;
+					log = `${prefix}双方同时尝试投技，互相受创：你${dmgE}，对手${dmgP}。`;
 					return { damageToPlayer, damageToEnemy, log };
 				}
-				log = '双方行动相互抵消。';
+				log = `${prefix}双方行动相互抵消。`;
 				return { damageToPlayer, damageToEnemy, log };
 			}
 		}
 
-		log = '本回合未能分出胜负。';
+		log = `${prefix}本回合未能分出胜负。`;
 		return { damageToPlayer, damageToEnemy, log };
 	}
 
