@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { BattleState, Command } from '@/games/carrot-card-demo/types';
-import { combatService } from '@/games/carrot-card-demo/services/cardService';
+import { combatService } from '@/games/carrot-card-demo/services/combatService';
 import { aiService } from '@/games/carrot-card-demo/services/aiService';
 import { BattleInterface } from '@/games/carrot-card-demo/components/BattleInterface';
 
