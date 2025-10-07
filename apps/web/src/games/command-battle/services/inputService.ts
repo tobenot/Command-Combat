@@ -166,10 +166,10 @@ class InputService {
 			'left': '←',
 			'right': '→',
 			'neutral': '·',
-			'punch': 'P',
-			'kick': 'K',
-			'block': 'B',
-			'special': 'S'
+			'punch': '轻拳',
+			'kick': '轻脚',
+			'block': '格挡',
+			'special': '特殊'
 		};
 
 		return sequence.map(input => displayMap[input]).join(' ');
