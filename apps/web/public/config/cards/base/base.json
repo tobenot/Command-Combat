@@ -1,0 +1,36 @@
+[
+    {
+        "id": "intro_event",
+        "name": "The Journey Begins",
+        "type": "event",
+        "description": "You stand at a crossroads. The path ahead is filled with mystery, but the thrill of adventure courses through your veins.",
+        "illustration": "loc_wasteland",
+        "choices": [
+            {
+                "text": "Take the left path",
+                "description": "This road is dark and narrow, shrouded in shadows."
+            },
+            {
+                "text": "Take the right path",
+                "description": "You glimpse a faint light glowing in the distance."
+            }
+        ]
+    },
+    {
+        "id": "find_item",
+        "name": "Mysterious Discovery",
+        "type": "event",
+        "description": "Within an ancient chest, you discover a gleaming artifact that pulses with otherworldly energy.",
+        "illustration": "player_male_ecologist",
+        "choices": [
+            {
+                "text": "Take the artifact",
+                "description": "It feels warm to the touch and seems to contain hidden power."
+            },
+            {
+                "text": "Leave it behind",
+                "description": "Better not to meddle with objects of unknown origin."
+            }
+        ]
+    }
+]

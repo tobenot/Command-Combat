@@ -1,0 +1,71 @@
+name: Deploy to GitHub Pages
+
+on:
+  # 在推送到 main 分支时触发
+  push:
+    branches: [ "main", "master" ]
+  # 允许在 GitHub Actions 页面手动触发
+  workflow_dispatch:
+
+# 设置 GITHUB_TOKEN 的权限，以允许部署到 GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  packages: read  # <-- 添加此行以允许读取 GitHub Packages
+
+# 只允许一个并发部署，新的部署会取消正在进行的部署
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+          registry-url: 'https://npm.pkg.github.com' # <-- 指向 GitHub Packages 注册表
+      
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # <-- 使用 GITHUB_TOKEN 进行认证
+      
+      - name: Build for GitHub Pages
+        run: yarn build:pages
+        env:
+          NODE_ENV: production
+          GITHUB_PAGES: true
+          VITE_BACKEND_URL: ${{ secrets.VITE_BACKEND_URL }}
+          VITE_PUBLIC_URL: ${{ secrets.VITE_PUBLIC_URL }}
+          VITE_BASE_URL: /Basic-Web-Game/
+      
+      - name: Setup Pages
+        # 使用官方 Action 配置 GitHub Pages
+        uses: actions/configure-pages@v4
+      
+      - name: Upload artifact
+        # 将构建产物上传，以便部署任务使用
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # 从 'dist' 目录上传
+          path: './dist'
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    # `deploy` 任务依赖于 `build` 任务的成功完成
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
