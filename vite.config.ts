@@ -49,7 +49,7 @@ export default defineConfig(({ command, mode }) => {
         },
       }),
     ],
-    base: process.env.GITHUB_PAGES ? `/${pkg.name}/` : './',
+    base: process.env.GITHUB_PAGES ? '/Command-Combat/' : './',
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './apps/web/src'),
